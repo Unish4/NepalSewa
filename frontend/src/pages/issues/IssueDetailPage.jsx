@@ -1,7 +1,17 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, MapPin, Calendar, User, AlertCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  User,
+  AlertCircle,
+  Pencil,
+  Trash2,
+} from "lucide-react";
+import toast from "react-hot-toast";
 import useIssueStore from "../../store/useIssueStore.js";
+import useAuthStore from "../../store/useAuthStore.js";
 import {
   STATUS_CONFIG,
   PRIORITY_CONFIG,
@@ -9,17 +19,35 @@ import {
 } from "../../constants/issue.js";
 import { timeAgo } from "../../utils/timeAgo.js";
 import MiniMap from "../../components/map/MiniMap.jsx";
+import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 
 const IssueDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { currentIssue, isLoading, error, getIssueById } = useIssueStore();
+  const { currentIssue, isLoading, error, getIssueById, deleteIssue } =
+    useIssueStore();
+  const { user, isAuthenticated } = useAuthStore();
+
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     getIssueById(id);
   }, [id, getIssueById]);
 
-  //  Loading skeleton ─
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteIssue(id);
+      toast.success("Issue deleted successfully");
+      navigate("/issues");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to delete issue");
+      setIsDeleting(false);
+    }
+  };
+
+  // Loading 
   if (isLoading) {
     return (
       <div className="max-w-3xl mx-auto animate-pulse space-y-4">
@@ -32,7 +60,7 @@ const IssueDetailPage = () => {
     );
   }
 
-  //  Error / not found 
+  // Error 
   if (error || !currentIssue) {
     return (
       <div className="max-w-3xl mx-auto text-center py-20">
@@ -53,24 +81,54 @@ const IssueDetailPage = () => {
     PRIORITY_CONFIG[currentIssue.priority] || PRIORITY_CONFIG.low;
   const CategoryIcon = CATEGORY_ICONS[currentIssue.category] || AlertCircle;
   const hasImages = currentIssue.images?.length > 0;
-
-  // Convenience booleans for location rendering
-  const hasCoords = currentIssue.location?.lat && currentIssue.location?.lng;
+  const hasCoords = !!(
+    currentIssue.location?.lat && currentIssue.location?.lng
+  );
   const hasAddress = !!currentIssue.location?.address;
+
+  const isOwner =
+    isAuthenticated &&
+    (user?._id === currentIssue.author?._id || user?.role === "admin");
 
   return (
     <div className="max-w-3xl mx-auto">
-      {/* Back button */}
-      <button
-        onClick={() => navigate(-1)}
-        className="flex items-center gap-1.5 text-sm text-gray-500
-          hover:text-gray-800 mb-6 transition-colors"
-      >
-        <ArrowLeft size={16} />
-        Back to issues
-      </button>
+      {/* Header row — back button left, owner actions right */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-1.5 text-sm text-gray-500
+            hover:text-gray-800 transition-colors"
+        >
+          <ArrowLeft size={16} />
+          Back to issues
+        </button>
 
-      {/*  Image gallery  */}
+        {/* Edit + Delete buttons — only visible to the issue owner or admin */}
+        {isOwner && (
+          <div className="flex items-center gap-2">
+            <Link
+              to={`/issues/${id}/edit`}
+              className="flex items-center gap-1.5 text-sm text-blue-600
+                px-3 py-2 border border-blue-200 rounded-lg hover:bg-blue-50
+                transition-colors"
+            >
+              <Pencil size={14} />
+              Edit
+            </Link>
+            <button
+              onClick={() => setShowDeleteDialog(true)}
+              className="flex items-center gap-1.5 text-sm text-red-600
+                px-3 py-2 border border-red-200 rounded-lg hover:bg-red-50
+                transition-colors"
+            >
+              <Trash2 size={14} />
+              Delete
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Image gallery */}
       {hasImages ? (
         <div className="mb-6">
           <img
@@ -100,9 +158,8 @@ const IssueDetailPage = () => {
         </div>
       )}
 
-      {/*  Main content card  */}
+      {/* Main content card */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 mb-5">
-        {/* Badges */}
         <div className="flex flex-wrap items-center gap-2 mb-4">
           <span
             className={`flex items-center gap-1.5 text-xs font-medium
@@ -125,12 +182,10 @@ const IssueDetailPage = () => {
           </span>
         </div>
 
-        {/* Title */}
         <h1 className="text-xl font-semibold text-gray-900 mb-3 leading-snug">
           {currentIssue.title}
         </h1>
 
-        {/* Meta */}
         <div className="flex flex-wrap gap-4 text-xs text-gray-500 mb-5">
           <span className="flex items-center gap-1.5">
             <User size={13} />
@@ -152,7 +207,6 @@ const IssueDetailPage = () => {
 
         <div className="border-t border-gray-100 mb-5" />
 
-        {/* Description */}
         <h2 className="text-sm font-medium text-gray-700 mb-2">Description</h2>
         <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">
           {currentIssue.description}
@@ -174,12 +228,12 @@ const IssueDetailPage = () => {
         )}
       </div>
 
-      {/*  Details card  */}
+      {/* Details card */}
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
         <h2 className="text-sm font-medium text-gray-700 mb-4">
           Issue details
         </h2>
-        <dl className="space-y-0">
+        <dl>
           {[
             {
               label: "Issue ID",
@@ -232,6 +286,17 @@ const IssueDetailPage = () => {
           ))}
         </dl>
       </div>
+
+      {/* Delete confirm dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        title="Delete this report?"
+        description={`"${currentIssue.title}" will be permanently removed and cannot be recovered.`}
+        confirmLabel="Delete"
+        isLoading={isDeleting}
+        onConfirm={handleDelete}
+        onClose={() => !isDeleting && setShowDeleteDialog(false)}
+      />
     </div>
   );
 };

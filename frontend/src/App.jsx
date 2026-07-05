@@ -11,6 +11,8 @@ import RegisterPage from "./pages/auth/RegisterPage";
 import IssuesPage from "./pages/issues/IssuesPage";
 import CreateIssuePage from "./pages/issues/CreateIssuePage";
 import IssueDetailPage from "./pages/issues/IssueDetailPage";
+import MyIssuesPage from "./pages/issues/MyIssuesPage";
+import EditIssuePage from "./pages/issues/EditIssuePage";
 import useAuthStore from "./store/useAuthStore";
 
 // Public only route - redirects authenticated users away from auth pages
@@ -65,7 +67,30 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="issues/:id" element={<IssueDetailPage />} />
+          <Route
+            path="issues/me"
+            element={
+              <ProtectedRoute>
+                <MyIssuesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="issues/:id"
+            element={
+              <PublicOnlyRoute>
+                <IssueDetailPage />
+              </PublicOnlyRoute>
+            }
+          />
+          <Route
+            path="issues/:id/edit"
+            element={
+              <ProtectedRoute>
+                <EditIssuePage />
+              </ProtectedRoute>
+            }
+          />
 
           {/* 404 page */}
           <Route path="*" element={<NotFoundPage />} />

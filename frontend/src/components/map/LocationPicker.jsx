@@ -9,15 +9,12 @@ import {
 import { Navigation, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 
-// Nepal's geographic center — the map opens here by default.
 const NEPAL_CENTER = [28.3949, 84.124];
 const DEFAULT_ZOOM = 7;
 
 const ClickHandler = ({ onLocationSelect }) => {
   useMapEvents({
-    click: (e) => {
-      onLocationSelect(e.latlng.lat, e.latlng.lng);
-    },
+    click: (e) => onLocationSelect(e.latlng.lat, e.latlng.lng),
   });
   return null;
 };
@@ -25,15 +22,14 @@ const ClickHandler = ({ onLocationSelect }) => {
 const MapCenterer = ({ position }) => {
   const map = useMap();
   useEffect(() => {
-    if (position) {
+    if (position)
       map.setView([position.lat, position.lng], 15, { animate: true });
-    }
   }, [position, map]);
   return null;
 };
 
-const LocationPicker = ({ onLocationChange }) => {
-  const [position, setPosition] = useState(null);
+const LocationPicker = ({ onLocationChange, initialPosition = null }) => {
+  const [position, setPosition] = useState(initialPosition);
   const [isLocating, setIsLocating] = useState(false);
 
   const reverseGeocode = async (lat, lng) => {
@@ -42,10 +38,8 @@ const LocationPicker = ({ onLocationChange }) => {
         `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
       );
       const data = await res.json();
-      // display_name is the full comma-separated address string.
       return data.display_name || "";
     } catch {
-      // Geocoding failure is non-critical — we still have the coordinates.
       return "";
     }
   };
@@ -61,9 +55,7 @@ const LocationPicker = ({ onLocationChange }) => {
       toast.error("Geolocation is not supported by your browser");
       return;
     }
-
     setIsLocating(true);
-
     navigator.geolocation.getCurrentPosition(
       async ({ coords }) => {
         const { latitude: lat, longitude: lng } = coords;
@@ -74,52 +66,46 @@ const LocationPicker = ({ onLocationChange }) => {
         toast.success("Location detected!");
       },
       () => {
-        toast.error("Could not get your location. Click on the map instead.");
+        toast.error("Could not get your location. Click the map instead.");
         setIsLocating(false);
       },
       { timeout: 10000 },
     );
   };
 
+  const mapCenter = position ? [position.lat, position.lng] : NEPAL_CENTER;
+  const mapZoom = position ? 15 : DEFAULT_ZOOM;
+
   return (
     <div className="space-y-3">
-      {/* Use my current location button */}
       <button
         type="button"
         onClick={useMyLocation}
         disabled={isLocating}
         className="w-full flex items-center justify-center gap-2 py-2.5 text-sm
           font-medium border border-gray-200 rounded-lg text-gray-600
-          hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          hover:bg-gray-50 transition-colors disabled:opacity-50"
       >
         <Navigation size={15} className="text-green-600" />
         {isLocating ? "Detecting your location..." : "Use my current location"}
       </button>
 
-      {/* Interactive map — centered on Nepal */}
       <div className="h-72 rounded-lg overflow-hidden border border-gray-200">
         <MapContainer
-          center={NEPAL_CENTER}
-          zoom={DEFAULT_ZOOM}
+          center={mapCenter}
+          zoom={mapZoom}
           style={{ height: "100%", width: "100%" }}
         >
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           />
-
-          {/* Listens for clicks and forwards coordinates */}
           <ClickHandler onLocationSelect={handleMapClick} />
-
-          {/* Pans map when location is set via GPS button */}
           <MapCenterer position={position} />
-
-          {/* Drop a marker at the selected position */}
           {position && <Marker position={[position.lat, position.lng]} />}
         </MapContainer>
       </div>
 
-      {/* Status line below the map */}
       {position ? (
         <div
           className="flex items-start gap-2 bg-green-50 border border-green-100

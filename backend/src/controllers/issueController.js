@@ -10,10 +10,20 @@ const checkValidation = (req, res) => {
   }
 };
 
-// ─── POST /api/issues 
+const assertOwnership = (issue, user, res) => {
+  const isOwner = issue.author.toString() === user._id.toString();
+  const isAdmin = user.role === "admin";
+  if (!isOwner && !isAdmin) {
+    res.status(403);
+    throw new Error("Not authorized to modify this issue");
+  }
+};
+
+//  POST /api/issues
 export const createIssue = async (req, res, next) => {
   try {
     checkValidation(req, res);
+
     const { title, description, category, priority, address, lat, lng } =
       req.body;
 
@@ -23,9 +33,7 @@ export const createIssue = async (req, res, next) => {
     let imageUrls = [];
     if (req.files?.length > 0) {
       const results = await Promise.all(
-        req.files.map((file) =>
-          uploadToCloudinary(file.buffer, "smartnepal/issues"),
-        ),
+        req.files.map((f) => uploadToCloudinary(f.buffer, "smartnepal/issues")),
       );
       imageUrls = results.map((r) => r.secure_url);
     }
@@ -35,24 +43,19 @@ export const createIssue = async (req, res, next) => {
       description,
       category,
       priority: priority || "low",
-      location: {
-        address: address || "",
-        lat: parsedLat,
-        lng: parsedLng,
-      },
+      location: { address: address || "", lat: parsedLat, lng: parsedLng },
       images: imageUrls,
       author: req.user._id,
     });
 
     await issue.populate("author", "name email");
-
     res.status(201).json({ success: true, issue });
   } catch (error) {
     next(error);
   }
 };
 
-// ─── GET /api/issues 
+//  GET /api/issues
 export const getIssues = async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -86,7 +89,39 @@ export const getIssues = async (req, res, next) => {
   }
 };
 
-// ─── GET /api/issues/:id 
+//  GET /api/issues/me
+export const getMyIssues = async (req, res, next) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(20, Math.max(1, parseInt(req.query.limit) || 10));
+    const skip = (page - 1) * limit;
+
+    const [issues, total] = await Promise.all([
+      Issue.find({ author: req.user._id })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      Issue.countDocuments({ author: req.user._id }),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      issues,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: page < Math.ceil(total / limit),
+        hasPrev: page > 1,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+//  GET /api/issues/:id
 export const getIssueById = async (req, res, next) => {
   try {
     const issue = await Issue.findById(req.params.id)
@@ -98,14 +133,82 @@ export const getIssueById = async (req, res, next) => {
         .status(404)
         .json({ success: false, message: "Issue not found" });
     }
+    res.status(200).json({ success: true, issue });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid issue ID format" });
+    }
+    next(error);
+  }
+};
+
+//  PUT /api/issues/:id
+// Citizens can update their own issues. Admins can update any issue.
+export const updateIssue = async (req, res, next) => {
+  try {
+    checkValidation(req, res);
+
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Issue not found" });
+    }
+
+    // Will throw 403 if neither owner nor admin.
+    assertOwnership(issue, req.user, res);
+
+    const { title, description, category, priority, address, lat, lng } =
+      req.body;
+
+    if (title !== undefined) issue.title = title;
+    if (description !== undefined) issue.description = description;
+    if (category !== undefined) issue.category = category;
+    if (priority !== undefined) issue.priority = priority;
+
+    // Update nested location fields individually.
+    if (address !== undefined) issue.location.address = address;
+    if (lat !== undefined) issue.location.lat = parseFloat(lat);
+    if (lng !== undefined) issue.location.lng = parseFloat(lng);
+
+    await issue.save();
+    await issue.populate("author", "name email");
 
     res.status(200).json({ success: true, issue });
   } catch (error) {
     if (error.name === "CastError") {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid issue ID format",
-      });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid issue ID format" });
+    }
+    next(error);
+  }
+};
+
+//  DELETE /api/issues/:id
+export const deleteIssue = async (req, res, next) => {
+  try {
+    const issue = await Issue.findById(req.params.id);
+    if (!issue) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Issue not found" });
+    }
+
+    assertOwnership(issue, req.user, res);
+
+    await issue.deleteOne();
+
+    res
+      .status(200)
+      .json({ success: true, message: "Issue deleted successfully" });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid issue ID format" });
     }
     next(error);
   }

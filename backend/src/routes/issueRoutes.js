@@ -1,23 +1,25 @@
 import { Router } from "express";
 import {
-  createIssue,
-  getIssues,
-  getIssueById,
+  createIssue, getIssues, getMyIssues,
+  getIssueById, updateIssue, deleteIssue,
 } from "../controllers/issueController.js";
 import { protect } from "../middleware/authMiddleware.js";
-import { createIssueValidator } from "../utils/validators.js";
+import { createIssueValidator, updateIssueValidator } from "../utils/validators.js";
 import { upload } from "../middleware/upload.js";
-
 
 const router = Router();
 
-//  Public routes
-router.get("/", getIssues);
+//  Non-parameterized routes 
+router.get("/",   getIssues);
+router.get("/me", protect, getMyIssues);
+router.post("/",  protect, upload.array("images", 3), createIssueValidator, createIssue);
 
-//  Protected routes (no params)
-router.post("/", protect, upload.array("images", 3), createIssueValidator, createIssue);
+//  Parameterized routes 
+// PUT sends JSON (no file upload in Phase 7), so no upload middleware here.
+router.get    ("/:id", getIssueById);
+router.put    ("/:id", protect, updateIssueValidator, updateIssue);
+router.delete ("/:id", protect, deleteIssue);
 
-//  Parameterized routes — always last
-router.get("/:id", getIssueById);
+// Phase 8: router.post("/:id/upvote", protect, upvoteIssue);
 
 export default router;
