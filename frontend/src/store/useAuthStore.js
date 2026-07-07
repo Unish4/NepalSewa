@@ -4,6 +4,9 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  updatePreferencesRequest,
+  updateProfileRequest,
+  uploadAvatarRequest,
 } from "../services/authService.js";
 
 const useAuthStore = create(
@@ -40,6 +43,45 @@ const useAuthStore = create(
           await logoutUser();
         } finally {
           set({ user: null, isAuthenticated: false });
+        }
+      },
+
+      updatePreferences: async (preferences) => {
+        set({ isLoading: true });
+        try {
+          const res = await updatePreferencesRequest(preferences);
+          set((state) => ({
+            user: { ...state.user, ...res.user },
+          }));
+          return res;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      updateProfile: async (profileData) => {
+        set({ isLoading: true });
+        try {
+          const res = await updateProfileRequest(profileData);
+          set((state) => ({
+            user: { ...state.user, ...res.user },
+          }));
+          return res;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      uploadAvatar: async (file) => {
+        set({ isLoading: true });
+        try {
+          const res = await uploadAvatarRequest(file);
+          set((state) => ({
+            user: { ...state.user, ...res.user },
+          }));
+          return res;
+        } finally {
+          set({ isLoading: false });
         }
       },
     }),

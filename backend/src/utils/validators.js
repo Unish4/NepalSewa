@@ -31,6 +31,30 @@ export const loginValidator = [
   body("password").notEmpty().withMessage("Password is required"),
 ];
 
+export const updatePreferencesValidator = [
+  body("emailNotifications")
+    .isBoolean()
+    .withMessage("emailNotifications must be true or false"),
+];
+
+export const updateProfileValidator = [
+  body("name")
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage("Name cannot be empty")
+    .isLength({ min: 2, max: 50 })
+    .withMessage("Name must be between 2 and 50 characters"),
+  body("phone")
+    .optional({ values: "null" })
+    .trim()
+    .matches(/^[0-9+\-\s()]{7,15}$/)
+    .withMessage("Please provide a valid phone number"),
+  body("province").optional().trim(),
+  body("district").optional().trim(),
+  body("city").optional().trim(),
+];
+
 const VALID_CATEGORIES = [
   "Road Damage",
   "Garbage",

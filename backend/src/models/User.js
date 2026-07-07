@@ -30,14 +30,24 @@ const userSchema = new mongoose.Schema(
     },
     phone: {
       type: String,
-      trim: true
+      trim: true,
     },
     province: {
       type: String,
     },
+    district: {
+      type: String,
+    },
+    city: {
+      type: String,
+    },
     avatar: {
       type: String,
-    }
+    },
+    emailNotifications: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true },
 );

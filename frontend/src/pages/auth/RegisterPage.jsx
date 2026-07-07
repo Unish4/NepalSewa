@@ -4,101 +4,7 @@ import { useForm } from "react-hook-form";
 import { Eye, EyeOff, Loader2, ChevronDown, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuthStore from "../../store/useAuthStore";
-
-// All 7 provinces with districts — from Figma
-const PROVINCES = {
-  "Koshi Province": [
-    "Bhojpur",
-    "Dhankuta",
-    "Ilam",
-    "Jhapa",
-    "Khotang",
-    "Morang",
-    "Okhaldhunga",
-    "Panchthar",
-    "Sankhuwasabha",
-    "Solukhumbu",
-    "Sunsari",
-    "Taplejung",
-    "Terhathum",
-    "Udayapur",
-  ],
-  "Madhesh Province": [
-    "Bara",
-    "Dhanusha",
-    "Mahottari",
-    "Parsa",
-    "Rautahat",
-    "Saptari",
-    "Sarlahi",
-    "Siraha",
-  ],
-  "Bagmati Province": [
-    "Bhaktapur",
-    "Chitwan",
-    "Dhading",
-    "Dolakha",
-    "Kathmandu",
-    "Kavrepalanchok",
-    "Lalitpur",
-    "Makwanpur",
-    "Nuwakot",
-    "Ramechhap",
-    "Rasuwa",
-    "Sindhuli",
-    "Sindhupalchok",
-  ],
-  "Gandaki Province": [
-    "Baglung",
-    "Gorkha",
-    "Kaski",
-    "Lamjung",
-    "Manang",
-    "Mustang",
-    "Myagdi",
-    "Nawalpur",
-    "Parbat",
-    "Syangja",
-    "Tanahun",
-  ],
-  "Lumbini Province": [
-    "Arghakhanchi",
-    "Banke",
-    "Bardiya",
-    "Dang",
-    "Gulmi",
-    "Kapilvastu",
-    "Nawalparasi West",
-    "Palpa",
-    "Pyuthan",
-    "Rolpa",
-    "Rukum East",
-    "Rupandehi",
-  ],
-  "Karnali Province": [
-    "Dailekh",
-    "Dolpa",
-    "Humla",
-    "Jajarkot",
-    "Jumla",
-    "Kalikot",
-    "Mugu",
-    "Rukum West",
-    "Salyan",
-    "Surkhet",
-  ],
-  "Sudurpashchim Province": [
-    "Achham",
-    "Baitadi",
-    "Bajhang",
-    "Bajura",
-    "Dadeldhura",
-    "Darchula",
-    "Doti",
-    "Kailali",
-    "Kanchanpur",
-  ],
-};
+import { NEPAL_LOCATIONS, getDistricts, getCities } from "../../constants/nepalLocations.js";
 
 // Password strength util
 function getStrength(pwd) {
@@ -125,6 +31,7 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [province, setProvince] = useState("");
+  const [district, setDistrict] = useState("");
   const [agreed, setAgreed] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
   const [passwordValue, setPasswordValue] = useState("");
@@ -136,7 +43,8 @@ export default function RegisterPage() {
     formState: { errors },
   } = useForm();
 
-  const districts = province ? (PROVINCES[province] ?? []) : [];
+  const districts = province ? getDistricts(province) : [];
+  const cities = district ? getCities(province, district) : [];
 
   const handlePasswordChange = (e) => {
     const value = e.target.value;
@@ -151,9 +59,10 @@ export default function RegisterPage() {
     }
     const payload = { ...data };
     delete payload.confirmPassword;
-    delete payload.district; // district not in User model yet
     if (!payload.phone) delete payload.phone;
     if (!payload.province) delete payload.province;
+    if (!payload.district) delete payload.district;
+    if (!payload.city) delete payload.city;
     // combine first + last name
     payload.name = `${data.firstName} ${data.lastName}`.trim();
     delete payload.firstName;
@@ -267,7 +176,7 @@ export default function RegisterPage() {
                   </label>
                   <input
                     type="text"
-                    placeholder="Ramesh"
+                    placeholder="Enter your first name"
                     {...register("firstName", { required: "Required" })}
                     className={
                       errors.firstName
@@ -290,7 +199,7 @@ export default function RegisterPage() {
                   </label>
                   <input
                     type="text"
-                    placeholder="Sharma"
+                    placeholder="Enter your last name"
                     {...register("lastName", { required: "Required" })}
                     className={
                       errors.lastName
@@ -316,7 +225,7 @@ export default function RegisterPage() {
                 </label>
                 <input
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email address"
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
@@ -372,12 +281,13 @@ export default function RegisterPage() {
                     {...register("province")}
                     onChange={(e) => {
                       setProvince(e.target.value);
+                      setDistrict("");
                     }}
                     className={SELECT_CLS}
                     style={{ paddingRight: "2.5rem" }}
                   >
                     <option value="">Select your province</option>
-                    {Object.keys(PROVINCES).map((p) => (
+                    {Object.keys(NEPAL_LOCATIONS).map((p) => (
                       <option key={p} value={p}>
                         {p}
                       </option>
@@ -399,6 +309,7 @@ export default function RegisterPage() {
                   <select
                     {...register("district")}
                     disabled={!province}
+                    onChange={(e) => setDistrict(e.target.value)}
                     className={`${SELECT_CLS} ${!province ? "opacity-50 cursor-not-allowed" : ""}`}
                     style={{ paddingRight: "2.5rem" }}
                   >
@@ -410,6 +321,36 @@ export default function RegisterPage() {
                     {districts.map((d) => (
                       <option key={d} value={d}>
                         {d}
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown
+                    size={14}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] pointer-events-none"
+                  />
+                </div>
+              </div>
+
+              {/* City */}
+              <div>
+                <label className="block text-xs font-semibold text-[#475569] mb-1.5">
+                  City/Municipality
+                </label>
+                <div className="relative">
+                  <select
+                    {...register("city")}
+                    disabled={!district}
+                    className={`${SELECT_CLS} ${!district ? "opacity-50 cursor-not-allowed" : ""}`}
+                    style={{ paddingRight: "2.5rem" }}
+                  >
+                    <option value="">
+                      {district
+                        ? "Select your city"
+                        : "Select a district first"}
+                    </option>
+                    {cities.map((c) => (
+                      <option key={c} value={c}>
+                        {c}
                       </option>
                     ))}
                   </select>

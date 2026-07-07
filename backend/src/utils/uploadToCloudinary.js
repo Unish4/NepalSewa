@@ -1,16 +1,20 @@
 import cloudinary from "../config/cloudinary.js";
 
-export const uploadToCloudinary = (buffer, folder = "SmartNepal") => {
+export const uploadToCloudinary = (
+  buffer,
+  folder = "SmartNepal",
+  transformation = [
+    { width: 1200, crop: "limit" },
+    { quality: "auto:good" },
+    { fetch_format: "auto" },
+  ],
+) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
         folder,
         resource_type: "image",
-        transformation: [
-          { width: 1200, crop: "limit" },
-          { quality: "auto:good" },
-          { fetch_format: "auto" },
-        ],
+        transformation,
       },
       (error, result) => {
         if (error) reject(error);
