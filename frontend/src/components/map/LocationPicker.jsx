@@ -6,7 +6,7 @@ import {
   useMapEvents,
   useMap,
 } from "react-leaflet";
-import { Navigation, MapPin } from "lucide-react";
+import { Navigation, MapPin, Search, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const NEPAL_CENTER = [28.3949, 84.124];
@@ -31,6 +31,9 @@ const MapCenterer = ({ position }) => {
 const LocationPicker = ({ onLocationChange, initialPosition = null }) => {
   const [position, setPosition] = useState(initialPosition);
   const [isLocating, setIsLocating] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const reverseGeocode = async (lat, lng) => {
     try {
@@ -73,24 +76,105 @@ const LocationPicker = ({ onLocationChange, initialPosition = null }) => {
     );
   };
 
+  const handleSearch = async (e) => {
+    e?.preventDefault();
+    if (!searchQuery.trim()) return;
+
+    setIsSearching(true);
+    try {
+      const res = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(searchQuery)}&format=json&limit=5&addressdetails=1`,
+        {
+          headers: {
+            "Accept-Language": "en",
+          },
+        }
+      );
+      const data = await res.json();
+      setSearchResults(data);
+      if (data.length === 0) {
+        toast.error("No locations found for your search query");
+      }
+    } catch (err) {
+      console.error("Geocoding search failed:", err);
+      toast.error("Failed to search location. Please try again.");
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const selectSearchResult = (result) => {
+    const lat = parseFloat(result.lat);
+    const lng = parseFloat(result.lon);
+    const address = result.display_name;
+
+    setPosition({ lat, lng });
+    onLocationChange({ lat, lng, address });
+    setSearchResults([]);
+    setSearchQuery("");
+    toast.success("Location pinned from search!");
+  };
+
   const mapCenter = position ? [position.lat, position.lng] : NEPAL_CENTER;
   const mapZoom = position ? 15 : DEFAULT_ZOOM;
 
   return (
     <div className="space-y-3">
+      {/* Typed Location Search */}
+      <form onSubmit={handleSearch} className="flex gap-2">
+        <div className="relative flex-1">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Type address or search location..."
+            className="w-full h-10 pl-9 pr-3 rounded-lg border border-[#e2e8f0] text-sm
+              placeholder:text-[#94a3b8] text-[#0f172a] outline-none
+              focus:border-[#16a34a] focus:ring-2 focus:ring-[#16a34a]/15 transition-all"
+          />
+          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#94a3b8]" />
+        </div>
+        <button
+          type="submit"
+          disabled={isSearching || !searchQuery.trim()}
+          className="h-10 px-4 rounded-xl bg-[#16a34a] hover:bg-[#15803d] text-white
+            font-semibold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed
+            flex items-center gap-1.5"
+        >
+          {isSearching ? <Loader2 size={14} className="animate-spin" /> : "Search"}
+        </button>
+      </form>
+
+      {/* Search results list */}
+      {searchResults.length > 0 && (
+        <div className="bg-white border border-[#e2e8f0] rounded-xl shadow-md max-h-48 overflow-y-auto z-10 relative">
+          {searchResults.map((result) => (
+            <button
+              key={result.place_id}
+              type="button"
+              onClick={() => selectSearchResult(result)}
+              className="w-full px-4 py-2.5 text-left text-xs hover:bg-[#f8fafc] border-b border-[#f1f5f9] last:border-b-0
+                text-[#475569] font-medium block truncate transition-colors cursor-pointer"
+            >
+              {result.display_name}
+            </button>
+          ))}
+        </div>
+      )}
+
       <button
         type="button"
         onClick={useMyLocation}
         disabled={isLocating}
         className="w-full flex items-center justify-center gap-2 py-2.5 text-sm
-          font-medium border border-gray-200 rounded-lg text-gray-600
-          hover:bg-gray-50 transition-colors disabled:opacity-50"
+          font-medium border border-[#e2e8f0] rounded-xl text-[#475569]
+          hover:bg-[#f8fafc] transition-colors disabled:opacity-50 cursor-pointer"
       >
-        <Navigation size={15} className="text-green-600" />
+        <Navigation size={15} className="text-[#16a34a]" />
         {isLocating ? "Detecting your location..." : "Use my current location"}
       </button>
 
-      <div className="h-72 rounded-lg overflow-hidden border border-gray-200">
+      <div className="h-72 rounded-xl overflow-hidden border border-[#e2e8f0]">
         <MapContainer
           center={mapCenter}
           zoom={mapZoom}
@@ -108,21 +192,21 @@ const LocationPicker = ({ onLocationChange, initialPosition = null }) => {
 
       {position ? (
         <div
-          className="flex items-start gap-2 bg-green-50 border border-green-100
-          rounded-lg px-3 py-2.5"
+          className="flex items-start gap-2 bg-[#f0fdf4] border border-[#bbf7d0]
+          rounded-xl px-3 py-2.5"
         >
-          <MapPin size={14} className="text-green-600 mt-0.5 shrink-0" />
+          <MapPin size={14} className="text-[#16a34a] mt-0.5 shrink-0" />
           <div>
-            <p className="text-xs font-medium text-green-700">
+            <p className="text-xs font-semibold text-[#16a34a]">
               Location pinned
             </p>
-            <p className="text-xs text-green-600 mt-0.5">
+            <p className="text-xs text-[#16a34a]/85 mt-0.5">
               {position.lat.toFixed(6)}, {position.lng.toFixed(6)}
             </p>
           </div>
         </div>
       ) : (
-        <p className="text-xs text-gray-400 text-center">
+        <p className="text-xs text-[#94a3b8] text-center">
           Click anywhere on the map to pin the issue location
         </p>
       )}

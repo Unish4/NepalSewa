@@ -309,6 +309,7 @@ export default function IssueDetailPage() {
             {/* Main content card */}
             <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm p-6">
               {/* Badges */}
+              {/* Badges — now includes AI badge when available */}
               <div className="flex flex-wrap items-center gap-2 mb-4">
                 <span
                   className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium"
@@ -340,6 +341,18 @@ export default function IssueDetailPage() {
                   />
                   {st.label}
                 </span>
+
+                {/* AI badge — shown when Gemini categorized this issue after creation */}
+                {currentIssue.aiCategory &&
+                  currentIssue.aiConfidence != null && (
+                    <span
+                      className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full
+      text-xs font-semibold bg-violet-50 text-violet-700 border border-violet-100"
+                    >
+                      <Sparkles size={10} />
+                      AI · {currentIssue.aiConfidence}% confidence
+                    </span>
+                  )}
               </div>
 
               <h2 className="text-xl font-semibold text-[#0f172a] leading-snug mb-4">
@@ -399,10 +412,7 @@ export default function IssueDetailPage() {
                   />
                   {hasAddress && (
                     <p className="text-xs text-[#94a3b8] mt-2 flex items-center gap-1.5">
-                      <MapPin
-                        size={11}
-                        className="text-[#16a34a] shrink-0"
-                      />
+                      <MapPin size={11} className="text-[#16a34a] shrink-0" />
                       {currentIssue.location.address}
                     </p>
                   )}

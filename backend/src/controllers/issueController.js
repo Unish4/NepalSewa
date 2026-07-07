@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import Issue from "../models/Issue.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
+import { categorizeIssue } from "../services/aiService.js";
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -46,6 +47,22 @@ export const createIssue = async (req, res, next) => {
       author: req.user._id,
     });
 
+    categorizeIssue(title, description)
+      .then(async (aiResult) => {
+        if (aiResult) {
+          await Issue.findByIdAndUpdate(issue._id, {
+            aiCategory: aiResult.category,
+            aiPriority: aiResult.priority,
+            aiConfidence: aiResult.confidence,
+          });
+        }
+      })
+      .catch((err) =>
+        console.error(
+          `Post-creation AI update failed for ${issue._id}: ${err.message}`,
+        ),
+      );
+      
     await issue.populate("author", "name email");
     res.status(201).json({ success: true, issue });
   } catch (error) {

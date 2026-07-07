@@ -6,15 +6,33 @@ const MAX_FILES = 3;
 const MAX_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
-const ImageUploader = forwardRef(({ onFilesChange }, ref) => {
-  const [previews, setPreviews] = useState([]);
+const ImageUploader = forwardRef(({ files = [], onFilesChange }, ref) => {
+  const [previews, setPreviews] = useState(() =>
+    files.map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }))
+  );
   const [isDragOver, setIsDragOver] = useState(false);
   const inputRef = useRef(null);
+
+  // Keep ref of latest previews for cleanup on unmount
+  const previewsRef = useRef(previews);
+  useEffect(() => {
+    previewsRef.current = previews;
+  }, [previews]);
 
   // Camera state
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [cameraStream, setCameraStream] = useState(null);
   const videoRef = useRef(null);
+
+  // Clean up previews object URLs on unmount to prevent leaks
+  useEffect(() => {
+    return () => {
+      previewsRef.current.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+  }, []);
 
   // Clean up camera stream on unmount
   useEffect(() => {
@@ -297,7 +315,7 @@ const ImageUploader = forwardRef(({ onFilesChange }, ref) => {
               >
                 <div className="w-5 h-5 rounded-full bg-white" />
               </button>
-              <div className="w-[52px]" /> {/* Spacer for centering capture button */}
+              <div className="w-13" /> {/* Spacer for centering capture button */}
             </div>
           </div>
         </div>
