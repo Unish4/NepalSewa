@@ -26,6 +26,8 @@ const ENV = {
   CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
   CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
   GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+  GMAIL_APP_PASSWORD: process.env.GMAIL_APP_PASSWORD,
+  GMAIL_USER: process.env.GMAIL_USER,
 };
 
 export default ENV;

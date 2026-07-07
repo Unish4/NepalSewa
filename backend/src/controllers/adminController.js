@@ -1,6 +1,7 @@
 import { validationResult } from "express-validator";
 import Issue from "../models/Issue.js";
 import User from "../models/User.js";
+import { sendStatusChangeEmail } from "../utils/emailService.js";
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -142,8 +143,7 @@ export const updateIssueStatus = async (req, res, next) => {
         .json({ success: false, message: "Issue not found" });
     }
 
-    issue.status = status;
-    issue.status = status;
+    const previousStatus = issue.status;
 
     // Record the exact time the issue was resolved so Phase 11 analytics
     // can compute average resolution time per category.
@@ -151,15 +151,25 @@ export const updateIssueStatus = async (req, res, next) => {
       issue.resolvedAt = new Date();
     }
 
-    // Always store the rejection reason when provided, even on non-rejected
-    // transitions — this lets admins leave notes that survive future status changes.
-    if (status === "rejected" && rejectionReason) {
-      issue.rejectionReason = rejectionReason.trim();
-    } else if (status !== "rejected") {
+    issue.status = status;
+    if (status === "rejected") {
+      issue.rejectionReason = rejectionReason
+        ? rejectionReason.trim()
+        : undefined;
+    } else {
       issue.rejectionReason = undefined;
     }
     await issue.save();
     await issue.populate("author", "name email");
+
+    if (status !== previousStatus) {
+      sendStatusChangeEmail(issue._id, status, rejectionReason || null).catch(
+        (err) =>
+          console.error(
+            `Email notification failed for issue ${issue._id} (${status}): ${err.message}`,
+          ),
+      );
+    }
 
     res.status(200).json({ success: true, issue });
   } catch (error) {

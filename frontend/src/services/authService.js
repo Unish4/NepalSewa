@@ -19,3 +19,20 @@ export const fetchMe = async () => {
   const response = await api.get("/api/auth/me");
   return response.data;
 };
+
+export const updatePreferencesRequest = async (preferences) => {
+  const response = await api.patch("/api/auth/preferences", preferences);
+  return response.data;
+};
+
+export const updateProfileRequest = async (profileData) => {
+  const response = await api.patch("/api/auth/profile", profileData);
+  return response.data;
+};
+
+export const uploadAvatarRequest = async (file) => {
+  const formData = new FormData();
+  formData.append("avatar", file);
+  const response = await api.post("/api/auth/avatar", formData);
+  return response.data;
+};

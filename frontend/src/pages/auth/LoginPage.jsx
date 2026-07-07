@@ -212,7 +212,7 @@ export default function LoginPage() {
                 <input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder="Enter your email address"
                   {...register("email", {
                     required: "Email is required",
                     pattern: {

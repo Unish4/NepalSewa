@@ -13,14 +13,14 @@ import CreateIssuePage from "./pages/issues/CreateIssuePage";
 import IssueDetailPage from "./pages/issues/IssueDetailPage";
 import MyIssuesPage from "./pages/issues/MyIssuesPage";
 import EditIssuePage from "./pages/issues/EditIssuePage";
+import ProfilePage from "./pages/ProfilePage";
 import useAuthStore from "./store/useAuthStore";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import AdminIssuesPage from "./pages/admin/AdminIssuesPage";
 import AdminUsersPage from "./pages/admin/AdminUsersPage";
-import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage"; 
-
+import AdminAnalyticsPage from "./pages/admin/AdminAnalyticsPage";
 
 // Public only route - redirects authenticated users away from auth pages
 const PublicOnlyRoute = ({ children }) => {
@@ -84,6 +84,15 @@ function App() {
           {/* Public routes */}
           <Route index element={<HomePage />} />
 
+          <Route
+            path="profile"
+            element={
+              <ProtectedRoute>
+                <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+          
           {/* Issues routes */}
           <Route path="issues" element={<IssuesPage />} />
           <Route
