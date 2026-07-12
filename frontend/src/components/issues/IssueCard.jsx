@@ -8,8 +8,10 @@ import {
 } from "../../constants/issue.js";
 import { timeAgo } from "../../utils/timeAgo.js";
 import UpvoteButton from "./UpvoteButton.jsx";
+import { useIssueLabels } from "../../hooks/useIssueLabels.js";
 
 const CategoryBadge = ({ category }) => {
+  const { getCategoryLabel } = useIssueLabels();
   const Icon = CATEGORY_ICONS[category] || AlertCircle;
   const c = CATEGORY_CONFIG[category] || CATEGORY_CONFIG["Other"];
   return (
@@ -19,12 +21,13 @@ const CategoryBadge = ({ category }) => {
       style={{ backgroundColor: c.bg, color: c.color }}
     >
       <Icon size={10} />
-      {category}
+      {getCategoryLabel(category)}
     </span>
   );
 };
 
 const PriorityBadge = ({ priority }) => {
+  const { getPriorityLabel } = useIssueLabels();
   const c = PRIORITY_CONFIG[priority] || PRIORITY_CONFIG.low;
   return (
     <span
@@ -50,17 +53,16 @@ const PriorityBadge = ({ priority }) => {
           style={{ backgroundColor: c.color }}
         />
       )}
-      {c.label}
+      {getPriorityLabel(priority)}
     </span>
   );
 };
 
 const IssueCard = ({ issue }) => {
   const st = STATUS_CONFIG[issue.status] || STATUS_CONFIG.open;
+  const { getStatusLabel } = useIssueLabels();
   const CategoryIcon = CATEGORY_ICONS[issue.category] || AlertCircle;
 
-  // Show AI badge when the background AI job has stored a result.
-  // aiCategory is only set if the Gemini call succeeded after creation.
   const showAIBadge = !!(issue.aiCategory && issue.aiConfidence != null);
 
   return (
@@ -97,7 +99,7 @@ const IssueCard = ({ issue }) => {
               className="w-1.5 h-1.5 rounded-full"
               style={{ backgroundColor: st.dot }}
             />
-            {st.label}
+            {getStatusLabel(issue.status)}
           </span>
         </div>
 

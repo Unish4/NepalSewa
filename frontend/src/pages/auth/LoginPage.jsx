@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Eye, EyeOff, AlertCircle, Loader2, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuthStore from "../../store/useAuthStore";
+import LanguageSwitcher from "../../components/layout/LanguageSwitcher.jsx";
 
 // Nepal map SVG decoration — from Figma AuthLayout
 function NepalMapSVG() {
@@ -58,6 +60,7 @@ const INPUT_CLS =
   "w-full h-10 px-3 rounded-lg border border-[#e2e8f0] text-sm text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#16a34a] focus:ring-2 focus:ring-[#16a34a]/15 transition-all bg-white";
 
 export default function LoginPage() {
+  const { t, i18n } = useTranslation("auth");
   const navigate = useNavigate();
   const { login, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
@@ -75,12 +78,12 @@ export default function LoginPage() {
     setApiError("");
     try {
       await login(data);
-      toast.success("Welcome back!");
+      toast.success(t("login.welcomeBack") + "!");
       navigate("/");
     } catch (error) {
       setApiError(
         error.response?.data?.message ||
-          "Invalid email or password. Please try again.",
+          t("login.errorInvalid"),
       );
     }
   };
@@ -101,7 +104,15 @@ export default function LoginPage() {
             <MapPin size={15} className="text-white" />
           </div>
           <span className="font-bold text-white text-[15px] tracking-tight">
-            Smart<span style={{ color: "#86efac" }}>Nepal</span>
+            {i18n.language === "ne" ? (
+              <>
+                डिजिटल<span style={{ color: "#86efac" }}> सेवा</span>
+              </>
+            ) : (
+              <>
+                Digital<span style={{ color: "#86efac" }}>Sewa</span>
+              </>
+            )}
           </span>
         </div>
 
@@ -111,7 +122,7 @@ export default function LoginPage() {
             &ldquo;
           </div>
           <div className="mb-6">
-            {["Report.", "Track.", "Resolve."].map((word, i) => (
+            {[t("login.quote1"), t("login.quote2"), t("login.quote3")].map((word, i) => (
               <div
                 key={word}
                 className="font-bold leading-[1.1] tracking-tight"
@@ -125,15 +136,14 @@ export default function LoginPage() {
             ))}
           </div>
           <p className="text-white/70 text-base leading-relaxed max-w-70">
-            Connect your community to the change it needs. Every report makes
-            Nepal better.
+            {t("login.quoteSubtitle")}
           </p>
           <div className="w-12 h-0.5 bg-white/20 mt-7 mb-5 rounded-full" />
           <div className="flex flex-col gap-2.5">
             {[
-              "Real-time issue tracking",
-              "Direct municipality contact",
-              "AI-powered categorization",
+              t("login.feature1"),
+              t("login.feature2"),
+              t("login.feature3"),
             ].map((f) => (
               <div key={f} className="flex items-center gap-2.5">
                 <div className="w-1.5 h-1.5 rounded-full bg-[#86efac] shrink-0" />
@@ -146,11 +156,12 @@ export default function LoginPage() {
         {/* Bottom */}
         <div className="relative z-10 px-10 pb-8">
           <p style={{ color: "#86efac" }} className="text-xs font-medium">
-            Serving citizens across 7 provinces
+            {t("login.provincesFooter")}
           </p>
           <p className="text-white/30 text-[10px] mt-0.5">
-            Bagmati · Koshi · Gandaki · Lumbini · Karnali · Madhesh ·
-            Sudurpashchim
+            {i18n.language === "ne"
+              ? "बागमती · कोशी · गण्डकी · लुम्बिनी · कर्णाली · मधेश · सुदूरपश्चिम"
+              : "Bagmati · Koshi · Gandaki · Lumbini · Karnali · Madhesh · Sudurpashchim"}
           </p>
         </div>
 
@@ -165,7 +176,12 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right form panel ── */}
-      <div className="flex-1 bg-white flex flex-col">
+      <div className="flex-1 bg-white flex flex-col relative">
+        {/* Language switcher */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-10">
+          <LanguageSwitcher />
+        </div>
+
         {/* Mobile logo */}
         <div className="lg:hidden p-5 border-b border-[#f1f5f9]">
           <Link to="/" className="inline-flex items-center gap-2">
@@ -173,7 +189,15 @@ export default function LoginPage() {
               <MapPin size={13} className="text-white" />
             </div>
             <span className="font-bold text-[#0f172a] text-sm">
-              Smart<span className="text-[#16a34a]">Nepal</span>
+              {i18n.language === "ne" ? (
+                <>
+                  डिजिटल<span className="text-[#16a34a]"> सेवा</span>
+                </>
+              ) : (
+                <>
+                  Digital<span className="text-[#16a34a]">Sewa</span>
+                </>
+              )}
             </span>
           </Link>
         </div>
@@ -182,10 +206,10 @@ export default function LoginPage() {
           <div className="w-full max-w-100">
             <div className="mb-6">
               <h2 className="text-[26px] font-bold text-[#0f172a] tracking-tight">
-                Welcome back
+                {t("login.welcomeBack")}
               </h2>
               <p className="text-sm text-[#64748b] mt-1.5">
-                Sign in to your DigitalSewa account
+                {t("login.subtitle")}
               </p>
             </div>
 
@@ -207,12 +231,12 @@ export default function LoginPage() {
                   className="block text-xs font-semibold text-[#475569] mb-1.5"
                   htmlFor="email"
                 >
-                  Email address
+                  {t("login.emailLabel")}
                 </label>
                 <input
                   id="email"
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder={t("login.emailPlaceholder")}
                   {...register("email", {
                     required: "Email is required",
                     pattern: {
@@ -239,13 +263,13 @@ export default function LoginPage() {
                   className="block text-xs font-semibold text-[#475569] mb-1.5"
                   htmlFor="password"
                 >
-                  Password
+                  {t("login.passwordLabel")}
                 </label>
                 <div className="relative">
                   <input
                     id="password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
+                    placeholder={t("login.passwordPlaceholder")}
                     {...register("password", {
                       required: "Password is required",
                     })}
@@ -272,7 +296,7 @@ export default function LoginPage() {
                   type="button"
                   className="text-sm text-[#16a34a] hover:text-[#15803d] font-medium transition-colors"
                 >
-                  Forgot password?
+                  {t("login.forgotPassword")}
                 </button>
               </div>
 
@@ -285,21 +309,21 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" /> Signing in…
+                    <Loader2 size={16} className="animate-spin" /> {t("login.signingIn")}
                   </>
                 ) : (
-                  "Sign in"
+                  t("login.signInButton")
                 )}
               </button>
             </form>
 
             <p className="text-sm text-[#64748b] text-center mt-6">
-              Don't have an account?{" "}
+              {t("login.noAccount")}{" "}
               <Link
                 to="/register"
                 className="text-[#16a34a] hover:text-[#15803d] font-semibold transition-colors"
               >
-                Create one
+                {t("login.createOne")}
               </Link>
             </p>
           </div>

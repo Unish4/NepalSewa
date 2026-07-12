@@ -8,6 +8,9 @@ import "leaflet/dist/leaflet.css";
 
 import "./lib/leafletSetup.js";
 
+import "./i18n/index.js";
+
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>

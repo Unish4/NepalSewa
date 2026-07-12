@@ -72,6 +72,11 @@ export const updatePreferencesValidator = [
     .optional()
     .isBoolean()
     .withMessage("emailNotifications must be a boolean"),
+
+  body("preferredLanguage")
+    .optional()
+    .isIn(["en", "ne"])
+    .withMessage("preferredLanguage must be either 'en' or 'ne'"),
 ];
 
 export const updateProfileValidator = [

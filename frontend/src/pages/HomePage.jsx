@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   MapPin,
   AlertTriangle,
@@ -11,77 +12,72 @@ import {
   TrendingUp,
 } from "lucide-react";
 import useAuthStore from "../store/useAuthStore";
-
-
+import { useIssueLabels } from "../hooks/useIssueLabels.js";
 
 const CATEGORIES = [
   {
+    key: "Road Damage",
     Icon: AlertTriangle,
-    label: "Road Damage",
-    desc: "Potholes, sinkholes, surface damage",
     color: "#64748b",
     bg: "#f1f5f9",
   },
   {
+    key: "Garbage",
     Icon: Trash2,
-    label: "Garbage & Waste",
-    desc: "Illegal dumping, overflowing bins",
     color: "#65a30d",
     bg: "#f7fee7",
   },
   {
+    key: "Water Issue",
     Icon: Droplets,
-    label: "Water Issues",
-    desc: "Burst pipes, drainage, flooding",
     color: "#0284c7",
     bg: "#f0f9ff",
   },
   {
+    key: "Street Light",
     Icon: Lightbulb,
-    label: "Street Lights",
-    desc: "Broken or non-functional lighting",
     color: "#ca8a04",
     bg: "#fefce8",
   },
   {
+    key: "Illegal Construction",
     Icon: Building2,
-    label: "Illegal Construction",
-    desc: "Unauthorized structures, encroachments",
     color: "#ea580c",
     bg: "#fff7ed",
   },
   {
+    key: "Public Space",
     Icon: Trees,
-    label: "Parks & Public Spaces",
-    desc: "Damaged parks, public facilities",
     color: "#16a34a",
     bg: "#f0fdf4",
   },
 ];
 
-const HOW_IT_WORKS = [
-  {
-    n: "01",
-    Icon: MapPin,
-    title: "Take a photo & report",
-    desc: "Photograph the issue and submit a report with a description in seconds.",
-  },
-  {
-    n: "02",
-    Icon: TrendingUp,
-    title: "Add your location",
-    desc: "Pin the exact location on the map so authorities find it immediately.",
-  },
-  {
-    n: "03",
-    Icon: CheckCircle,
-    title: "Municipality gets notified",
-    desc: "The relevant municipality receives, triages, and dispatches a crew.",
-  },
-];
-
 export default function HomePage() {
+  const { t, i18n } = useTranslation();
   const { isAuthenticated, user } = useAuthStore();
+  const { getCategoryLabel, getCategoryDescription, getStatusLabel, getPriorityLabel } = useIssueLabels();
+
+  const HOW_IT_WORKS = [
+    {
+      n: "01",
+      Icon: MapPin,
+      title: t("home.step1Title"),
+      desc: t("home.step1Desc"),
+    },
+    {
+      n: "02",
+      Icon: TrendingUp,
+      title: t("home.step2Title"),
+      desc: t("home.step2Desc"),
+    },
+    {
+      n: "03",
+      Icon: CheckCircle,
+      title: t("home.step3Title"),
+      desc: t("home.step3Desc"),
+    },
+  ];
 
   return (
     <div className="bg-[#f8fafc]">
@@ -91,36 +87,37 @@ export default function HomePage() {
           <div className="flex flex-col lg:flex-row items-center gap-12">
             {/* Left */}
             <div className="flex-1">
-              <div
-                className="inline-flex items-center gap-2 bg-[#f0fdf4] text-[#16a34a]
-                text-xs font-semibold px-3 py-1.5 rounded-full border border-[#bbf7d0] mb-6"
-              >
-                <MapPin size={11} />
-                Civic Issue Reporting for Nepal
-              </div>
-
               <h1
                 className="text-4xl md:text-5xl font-bold text-[#0f172a]
                 tracking-tight leading-[1.1] mb-5"
               >
-                Your voice shapes a<br />
-                better <span className="text-[#16a34a]">Nepal.</span>
+                {t("home.headline1")}<br />
+                {i18n.language === "ne" ? (
+                  <>
+                    राम्रो <span className="text-[#16a34a]">नेपाल।</span>
+                  </>
+                ) : (
+                  <>
+                    {t("home.headline2")} <span className="text-[#16a34a]">Nepal.</span>
+                  </>
+                )}
               </h1>
 
               <p className="text-[#475569] text-lg leading-relaxed mb-8 max-w-130">
-                Report broken roads, garbage, water issues, and more in seconds.
-                DigitalSewa connects citizens directly to their municipalities.
+                {t("home.subtitle")}
               </p>
 
               <div className="flex flex-wrap gap-3 mb-6">
-                {(!isAuthenticated || (user?.role !== "admin" && user?.role !== "field_worker")) && (
+                {(!isAuthenticated ||
+                  (user?.role !== "admin" &&
+                    user?.role !== "field_worker")) && (
                   <Link
                     to={isAuthenticated ? "/issues/new" : "/register"}
                     className="inline-flex items-center gap-2 h-12 px-7 rounded-xl
                       bg-[#16a34a] hover:bg-[#15803d] text-white font-semibold text-[15px]
                       transition-colors shadow-sm"
                   >
-                    Report an Issue
+                    {t("home.ctaReport")}
                   </Link>
                 )}
                 <Link
@@ -129,20 +126,20 @@ export default function HomePage() {
                     border border-[#e2e8f0] text-[#475569] font-semibold text-[15px]
                     hover:bg-[#f8fafc] hover:border-[#cbd5e1] transition-all"
                 >
-                  View Issues Near You
+                  {t("home.ctaView")}
                 </Link>
               </div>
 
               <div className="flex items-center gap-5 text-xs text-[#94a3b8]">
                 {[
-                  "Free for citizens",
-                  "All 7 Provinces",
-                  "AI-powered triage",
-                ].map((t, i) => (
-                  <span key={t} className="flex items-center gap-1.5">
+                  t("home.trust1"),
+                  t("home.trust2"),
+                  t("home.trust3"),
+                ].map((text, i) => (
+                  <span key={text} className="flex items-center gap-1.5">
                     {i > 0 && <span className="text-[#e2e8f0]">·</span>}
                     <CheckCircle size={11} className="text-[#16a34a]" />
-                    {t}
+                    {text}
                   </span>
                 ))}
               </div>
@@ -166,16 +163,16 @@ export default function HomePage() {
                     px-2 py-0.5 rounded-full text-xs font-medium bg-[#eff6ff] text-[#1d4ed8]"
                   >
                     <span className="w-1.5 h-1.5 rounded-full bg-[#3b82f6]" />
-                    Open
+                    {getStatusLabel("open")}
                   </span>
                 </div>
                 <div className="p-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="bg-[#f1f5f9] text-[#64748b] text-[10px] font-medium px-2 py-0.5 rounded">
-                      Road Damage
+                      {getCategoryLabel("Road Damage")}
                     </span>
                     <span className="bg-[#fff7ed] text-[#ea580c] text-[10px] font-medium px-2 py-0.5 rounded">
-                      High
+                      {getPriorityLabel("high")}
                     </span>
                   </div>
                   <p className="text-sm font-semibold text-[#0f172a] line-clamp-2 mb-1">
@@ -199,16 +196,14 @@ export default function HomePage() {
         </div>
       </section>
 
-     
-
       {/* ── How it works  */}
       <section className="bg-white border-y border-[#e2e8f0]">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <h2 className="text-3xl font-bold text-[#0f172a] text-center mb-2">
-            How DigitalSewa works
+            {t("home.howItWorksTitle")}
           </h2>
           <p className="text-[#94a3b8] text-center mb-10">
-            Three simple steps to get your issue resolved.
+            {t("home.howItWorksSubtitle")}
           </p>
           <div className="grid md:grid-cols-3 gap-6">
             {HOW_IT_WORKS.map(({ n, Icon, title, desc }, i) => (
@@ -221,7 +216,7 @@ export default function HomePage() {
                   className="text-[80px] font-black text-[#16a34a]/20 leading-none
                   absolute top-3 right-5 select-none"
                 >
-                  {n}
+                  {i18n.language === "ne" ? (n === "01" ? "०१" : n === "02" ? "०२" : "०३") : n}
                 </p>
                 <div
                   className="w-11 h-11 rounded-xl bg-[#f0fdf4] border border-[#bbf7d0]
@@ -252,16 +247,16 @@ export default function HomePage() {
       <section className="bg-[#f8fafc]">
         <div className="max-w-7xl mx-auto px-6 py-16">
           <h2 className="text-3xl font-bold text-[#0f172a] text-center mb-2">
-            What can you report?
+            {t("home.categoriesTitle")}
           </h2>
           <p className="text-[#94a3b8] text-center mb-10">
-            DigitalSewa handles every kind of civic issue.
+            {t("home.categoriesSubtitle")}
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {CATEGORIES.map(({ Icon, label, desc, color, bg }) => (
+            {CATEGORIES.map(({ Icon, key, color, bg }) => (
               <Link
-                key={label}
-                to={`/issues?category=${encodeURIComponent(label)}`}
+                key={key}
+                to={`/issues?category=${encodeURIComponent(key)}`}
                 className="bg-white rounded-2xl p-5 border border-[#e2e8f0] flex
                   items-start gap-4 hover:shadow-md hover:border-[#cbd5e1]
                   hover:-translate-y-0.5 transition-all duration-200"
@@ -274,10 +269,10 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="text-sm font-semibold text-[#0f172a] mb-1">
-                    {label}
+                    {getCategoryLabel(key)}
                   </h3>
                   <p className="text-xs text-[#94a3b8] leading-relaxed">
-                    {desc}
+                    {getCategoryDescription(key)}
                   </p>
                 </div>
               </Link>
@@ -296,37 +291,37 @@ export default function HomePage() {
                   <MapPin size={14} className="text-white" />
                 </div>
                 <span className="font-bold text-white text-[15px]">
-                  DigitalSewa
+                  {t("app.name")}
                 </span>
               </div>
               <p className="text-[#64748b] text-sm max-w-60 leading-relaxed">
-                Connecting citizens to their municipalities for a better Nepal.
+                {t("home.footerTagline")}
               </p>
             </div>
             <div className="flex gap-12 text-sm">
               <div>
                 <p className="text-[#94a3b8] font-semibold uppercase tracking-wider text-[10px] mb-3">
-                  Platform
+                  {t("home.footerPlatform")}
                 </p>
-                {["Issues", "Map View", "About"].map((t) => (
+                {["Issues", "Map View", "About"].map((tName) => (
                   <p
-                    key={t}
+                    key={tName}
                     className="text-[#475569] hover:text-white cursor-pointer mb-2 transition-colors"
                   >
-                    {t}
+                    {tName === "Issues" ? t("nav.issues") : tName}
                   </p>
                 ))}
               </div>
               <div>
                 <p className="text-[#94a3b8] font-semibold uppercase tracking-wider text-[10px] mb-3">
-                  Government
+                  {t("home.footerGovernment")}
                 </p>
-                {["Admin Login", "Municipality Portal"].map((t) => (
+                {["Admin Login", "Municipality Portal"].map((tName) => (
                   <p
-                    key={t}
+                    key={tName}
                     className="text-[#475569] hover:text-white cursor-pointer mb-2 transition-colors"
                   >
-                    {t}
+                    {tName}
                   </p>
                 ))}
               </div>
@@ -336,8 +331,8 @@ export default function HomePage() {
             className="border-t border-[#1e293b] mt-10 pt-6 flex items-center
             justify-between text-xs text-[#475569]"
           >
-            <p>© {new Date().getFullYear()} DigitalSewa</p>
-            <p>Built for Nepal 🇳🇵</p>
+            <p>© {new Date().getFullYear()} {t("app.name")}</p>
+            <p>{t("home.footerBuiltFor")} 🇳🇵</p>
           </div>
         </div>
       </footer>

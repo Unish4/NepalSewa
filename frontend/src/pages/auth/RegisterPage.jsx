@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Eye, EyeOff, Loader2, ChevronDown, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuthStore from "../../store/useAuthStore";
 import { NEPAL_LOCATIONS, getDistricts, getCities } from "../../constants/nepalLocations.js";
+import LanguageSwitcher from "../../components/layout/LanguageSwitcher.jsx";
 
 // Password strength util
 function getStrength(pwd) {
@@ -18,7 +20,6 @@ function getStrength(pwd) {
 }
 
 const STRENGTH_COLORS = ["#e2e8f0", "#ef4444", "#f97316", "#eab308", "#16a34a"];
-const STRENGTH_LABELS = ["", "Weak", "Fair", "Good", "Strong"];
 
 const INPUT_CLS =
   "w-full h-10 px-3 rounded-lg border border-[#e2e8f0] text-sm text-[#0f172a] placeholder:text-[#94a3b8] outline-none focus:border-[#16a34a] focus:ring-2 focus:ring-[#16a34a]/15 transition-all bg-white";
@@ -26,6 +27,7 @@ const SELECT_CLS =
   "w-full h-10 px-3 rounded-lg border border-[#e2e8f0] text-sm text-[#0f172a] outline-none focus:border-[#16a34a] focus:ring-2 focus:ring-[#16a34a]/15 transition-all bg-white cursor-pointer appearance-none";
 
 export default function RegisterPage() {
+  const { t, i18n } = useTranslation("auth");
   const navigate = useNavigate();
   const { register: registerAction, isLoading } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
@@ -54,7 +56,11 @@ export default function RegisterPage() {
 
   const onSubmit = async (data) => {
     if (!agreed) {
-      toast.error("Please accept the Terms of Service to continue.");
+      toast.error(
+        i18n.language === "ne"
+          ? "कृपया अगाडि बढ्नको लागि सेवाका सर्तहरू स्वीकार गर्नुहोस्।"
+          : "Please accept the Terms of Service to continue.",
+      );
       return;
     }
     const payload = { ...data };
@@ -70,16 +76,45 @@ export default function RegisterPage() {
 
     try {
       await registerAction(payload);
-      toast.success("Account created! Welcome to DigitalSewa.");
+      toast.success(
+        i18n.language === "ne"
+          ? "खाता सिर्जना भयो! डिजिटल सेवामा स्वागत छ।"
+          : "Account created! Welcome to DigitalSewa.",
+      );
       navigate("/");
     } catch (error) {
       toast.error(
-        error.response?.data?.message || "Registration failed. Try again.",
+        error.response?.data?.message ||
+          (i18n.language === "ne"
+            ? "दर्ता असफल भयो। फेरि प्रयास गर्नुहोस्।"
+            : "Registration failed. Try again."),
       );
     }
   };
 
-  // Reuse the same left panel from Login
+  const STRENGTH_LABELS = [
+    "",
+    t("register.strengthWeak"),
+    t("register.strengthFair"),
+    t("register.strengthGood"),
+    t("register.strengthStrong"),
+  ];
+
+  const quoteWords =
+    i18n.language === "ne"
+      ? ["हजारौंसँग जोडिनुहोस्", "नेपाललाई बनाउन", "राम्रो।"]
+      : ["Join thousands", "making Nepal", "better."];
+
+  const quoteSubtitle =
+    i18n.language === "ne"
+      ? "तपाईंले गर्नुभएको हरेक रिपोर्टले तपाईंको नगरपालिकालाई नागरिकहरूको राम्रो सेवा गर्न मद्दत गर्दछ।"
+      : "Every report you make helps your municipality serve citizens better.";
+
+  const provincesList =
+    i18n.language === "ne"
+      ? "बागमती · कोशी · गण्डकी · लुम्बिनी · कर्णाली · मधेश · सुदूरपश्चिम"
+      : "Bagmati · Koshi · Gandaki · Lumbini · Karnali · Madhesh · Sudurpashchim";
+
   return (
     <div className="min-h-screen flex">
       {/* Left panel — identical to Login */}
@@ -92,15 +127,23 @@ export default function RegisterPage() {
             <MapPin size={15} className="text-white" />
           </div>
           <span className="font-bold text-white text-[15px] tracking-tight">
-            Smart<span style={{ color: "#86efac" }}>Nepal</span>
+            {i18n.language === "ne" ? (
+              <>
+                डिजिटल<span style={{ color: "#86efac" }}> सेवा</span>
+              </>
+            ) : (
+              <>
+                Digital<span style={{ color: "#86efac" }}>Sewa</span>
+              </>
+            )}
           </span>
         </div>
-        <div className="relative z-10 flex-1 flex flex-col items-start justify-center px-10 py-8">
+        <div className="relative z-10 flex-1 flex flex-col items-start justify-start pt-20 px-10 py-8">
           <div className="text-[80px] leading-none font-serif text-white/10 -mb-4 select-none">
             &ldquo;
           </div>
           <div className="mb-6">
-            {["Join thousands", "making Nepal", "better."].map((w, i) => (
+            {quoteWords.map((w, i) => (
               <div
                 key={w}
                 className="font-bold leading-[1.1] tracking-tight"
@@ -114,13 +157,14 @@ export default function RegisterPage() {
             ))}
           </div>
           <p className="text-white/70 text-base leading-relaxed max-w-70">
-            Every report you make helps your municipality serve citizens better.
+            {quoteSubtitle}
           </p>
         </div>
         <div className="relative z-10 px-10 pb-8">
           <p style={{ color: "#86efac" }} className="text-xs font-medium">
-            Serving citizens across 7 provinces
+            {t("login.provincesFooter")}
           </p>
+          <p className="text-white/30 text-[10px] mt-0.5">{provincesList}</p>
         </div>
         <svg
           viewBox="0 0 480 160"
@@ -140,14 +184,27 @@ export default function RegisterPage() {
       </div>
 
       {/* Right form panel */}
-      <div className="flex-1 bg-white flex flex-col overflow-y-auto">
+      <div className="flex-1 bg-white flex flex-col overflow-y-auto relative">
+        {/* Language switcher */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-8 z-10">
+          <LanguageSwitcher />
+        </div>
+
         <div className="lg:hidden p-5 border-b border-[#f1f5f9]">
           <Link to="/" className="inline-flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-[#16a34a] flex items-center justify-center">
               <MapPin size={13} className="text-white" />
             </div>
             <span className="font-bold text-[#0f172a] text-sm">
-              Smart<span className="text-[#16a34a]">Nepal</span>
+              {i18n.language === "ne" ? (
+                <>
+                  डिजिटल<span className="text-[#16a34a]"> सेवा</span>
+                </>
+              ) : (
+                <>
+                  Digital<span className="text-[#16a34a]">Sewa</span>
+                </>
+              )}
             </span>
           </Link>
         </div>
@@ -156,10 +213,10 @@ export default function RegisterPage() {
           <div className="w-full max-w-100">
             <div className="mb-6">
               <h2 className="text-[26px] font-bold text-[#0f172a] tracking-tight">
-                Create your account
+                {t("register.title")}
               </h2>
               <p className="text-sm text-[#64748b] mt-1.5">
-                Join thousands of citizens making Nepal better.
+                {t("register.subtitle")}
               </p>
             </div>
 
@@ -172,12 +229,14 @@ export default function RegisterPage() {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                    First name
+                    {t("register.firstName")}
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter your first name"
-                    {...register("firstName", { required: "Required" })}
+                    placeholder={i18n.language === "ne" ? "पहिलो नाम" : "First name"}
+                    {...register("firstName", {
+                      required: i18n.language === "ne" ? "आवश्यक छ" : "Required",
+                    })}
                     className={
                       errors.firstName
                         ? INPUT_CLS.replace(
@@ -195,12 +254,14 @@ export default function RegisterPage() {
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                    Last name
+                    {t("register.lastName")}
                   </label>
                   <input
                     type="text"
-                    placeholder="Enter your last name"
-                    {...register("lastName", { required: "Required" })}
+                    placeholder={i18n.language === "ne" ? "थर" : "Last name"}
+                    {...register("lastName", {
+                      required: i18n.language === "ne" ? "आवश्यक छ" : "Required",
+                    })}
                     className={
                       errors.lastName
                         ? INPUT_CLS.replace(
@@ -221,16 +282,22 @@ export default function RegisterPage() {
               {/* Email */}
               <div>
                 <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                  Email address
+                  {t("register.email")}
                 </label>
                 <input
                   type="email"
-                  placeholder="Enter your email address"
+                  placeholder={i18n.language === "ne" ? "इमेल ठेगाना" : "Email address"}
                   {...register("email", {
-                    required: "Email is required",
+                    required:
+                      i18n.language === "ne"
+                        ? "इमेल आवश्यक छ"
+                        : "Email is required",
                     pattern: {
                       value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: "Enter a valid email",
+                      message:
+                        i18n.language === "ne"
+                          ? "मान्य इमेल लेख्नुहोस्"
+                          : "Enter a valid email",
                     },
                   })}
                   className={
@@ -249,8 +316,10 @@ export default function RegisterPage() {
               {/* Phone */}
               <div>
                 <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                  Phone number{" "}
-                  <span className="text-[#94a3b8] font-normal">(optional)</span>
+                  {t("register.phone")}{" "}
+                  <span className="text-[#94a3b8] font-normal">
+                    {t("register.phoneOptional")}
+                  </span>
                 </label>
                 <div className="flex gap-2">
                   <div
@@ -274,7 +343,7 @@ export default function RegisterPage() {
               {/* Province */}
               <div>
                 <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                  Province
+                  {t("register.province")}
                 </label>
                 <div className="relative">
                   <select
@@ -286,7 +355,7 @@ export default function RegisterPage() {
                     className={SELECT_CLS}
                     style={{ paddingRight: "2.5rem" }}
                   >
-                    <option value="">Select your province</option>
+                    <option value="">{t("register.provincePlaceholder")}</option>
                     {Object.keys(NEPAL_LOCATIONS).map((p) => (
                       <option key={p} value={p}>
                         {p}
@@ -303,7 +372,7 @@ export default function RegisterPage() {
               {/* District */}
               <div>
                 <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                  District
+                  {t("register.district")}
                 </label>
                 <div className="relative">
                   <select
@@ -315,8 +384,8 @@ export default function RegisterPage() {
                   >
                     <option value="">
                       {province
-                        ? "Select your district"
-                        : "Select a province first"}
+                        ? t("register.districtPlaceholder")
+                        : t("register.districtPlaceholderNoProvince")}
                     </option>
                     {districts.map((d) => (
                       <option key={d} value={d}>
@@ -334,7 +403,7 @@ export default function RegisterPage() {
               {/* City */}
               <div>
                 <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                  City/Municipality
+                  {t("register.city")}
                 </label>
                 <div className="relative">
                   <select
@@ -345,8 +414,8 @@ export default function RegisterPage() {
                   >
                     <option value="">
                       {district
-                        ? "Select your city"
-                        : "Select a district first"}
+                        ? t("register.cityPlaceholder")
+                        : t("register.cityPlaceholderNoDistrict")}
                     </option>
                     {cities.map((c) => (
                       <option key={c} value={c}>
@@ -364,15 +433,24 @@ export default function RegisterPage() {
               {/* Password */}
               <div>
                 <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                  Password
+                  {t("register.password")}
                 </label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
+                    placeholder={t("register.passwordPlaceholder")}
                     {...register("password", {
-                      required: "Password is required",
-                      minLength: { value: 6, message: "Min. 6 characters" },
+                      required:
+                        i18n.language === "ne"
+                          ? "पासवर्ड आवश्यक छ"
+                          : "Password is required",
+                      minLength: {
+                        value: 6,
+                        message:
+                          i18n.language === "ne"
+                            ? "कमतीमा ६ अक्षर हुनुपर्छ"
+                            : "Min. 6 characters",
+                      },
                       onChange: handlePasswordChange,
                     })}
                     className={`${errors.password ? INPUT_CLS.replace("border-[#e2e8f0]", "border-red-300") : INPUT_CLS} pr-10`}
@@ -412,7 +490,7 @@ export default function RegisterPage() {
                         className="text-xs font-medium"
                         style={{ color: STRENGTH_COLORS[passwordStrength] }}
                       >
-                        {STRENGTH_LABELS[passwordStrength]} password
+                        {STRENGTH_LABELS[passwordStrength]}
                       </p>
                     )}
                   </div>
@@ -422,16 +500,20 @@ export default function RegisterPage() {
               {/* Confirm password */}
               <div>
                 <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                  Confirm password
+                  {t("register.confirmPassword")}
                 </label>
                 <div className="relative">
                   <input
                     type={showConfirm ? "text" : "password"}
-                    placeholder="Re-enter your password"
+                    placeholder={t("register.confirmPasswordPlaceholder")}
                     {...register("confirmPassword", {
-                      required: "Please confirm your password",
+                      required:
+                        i18n.language === "ne"
+                          ? "कृपया आफ्नो पासवर्ड पुष्टि गर्नुहोस्"
+                          : "Please confirm your password",
                       validate: (v) =>
-                        v === getValues("password") || "Passwords do not match",
+                        v === getValues("password") ||
+                        t("register.passwordMismatch"),
                     })}
                     className={`${errors.confirmPassword ? INPUT_CLS.replace("border-[#e2e8f0]", "border-red-300") : INPUT_CLS} pr-10`}
                   />
@@ -480,13 +562,13 @@ export default function RegisterPage() {
                   </div>
                 </div>
                 <span className="text-sm text-[#475569] leading-relaxed">
-                  I agree to the{" "}
+                  {t("register.termsAgree")}{" "}
                   <span className="text-[#16a34a] font-semibold cursor-pointer hover:underline">
-                    Terms of Service
+                    {t("register.termsOfService")}
                   </span>{" "}
-                  and{" "}
+                  {t("register.and")}{" "}
                   <span className="text-[#16a34a] font-semibold cursor-pointer hover:underline">
-                    Privacy Policy
+                    {t("register.privacyPolicy")}
                   </span>
                 </span>
               </label>
@@ -500,22 +582,21 @@ export default function RegisterPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" /> Creating
-                    account…
+                    <Loader2 size={16} className="animate-spin" /> {t("register.submitting")}
                   </>
                 ) : (
-                  "Create account"
+                  t("register.submitButton")
                 )}
               </button>
             </form>
 
             <p className="text-sm text-[#64748b] text-center mt-5">
-              Already have an account?{" "}
+              {t("register.haveAccount")}{" "}
               <Link
                 to="/login"
                 className="text-[#16a34a] hover:text-[#15803d] font-semibold transition-colors"
               >
-                Sign in
+                {t("register.signIn")}
               </Link>
             </p>
           </div>

@@ -1,0 +1,13 @@
+{
+  "sidebar": {
+    "dashboard": "Dashboard",
+    "allIssues": "All Issues",
+    "citizens": "Citizens",
+    "fieldWorkers": "Field Workers",
+    "analytics": "Analytics"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of all civic reports across SmartNepal"
+  }
+}

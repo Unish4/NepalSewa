@@ -111,7 +111,7 @@ const AdminFieldWorkersPage = () => {
                 type="text"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                placeholder="Bishnu Tamang"
+                placeholder="Enter full name"
                 className={INPUT_CLS}
               />
             </div>
@@ -142,7 +142,7 @@ const AdminFieldWorkersPage = () => {
                 type="email"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                placeholder="worker@smartnepal.gov.np"
+                placeholder="Enter email address"
                 className={INPUT_CLS}
               />
             </div>

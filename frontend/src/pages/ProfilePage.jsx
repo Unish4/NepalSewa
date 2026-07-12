@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   User,
   Mail,
@@ -16,6 +17,8 @@ import {
   X,
   ChevronDown,
   HardHat,
+  Languages,
+  Check,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuthStore from "../store/useAuthStore.js";
@@ -47,7 +50,13 @@ const Toggle = ({ checked, onChange, disabled }) => (
   </button>
 );
 
+const LANGUAGES = [
+  { code: "en", label: "English", flag: "🇬🇧" },
+  { code: "ne", label: "नेपाली",  flag: "🇳🇵" },
+];
+
 export default function ProfilePage() {
+  const { t, i18n } = useTranslation(["common", "auth"]);
   const { user, updatePreferences, updateProfile, uploadAvatar } =
     useAuthStore();
 
@@ -57,6 +66,8 @@ export default function ProfilePage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [langSaving, setLangSaving] = useState(false);
+
   const [selectedDistrict, setSelectedDistrict] = useState(
     user?.district || "",
   );
@@ -73,11 +84,7 @@ export default function ProfilePage() {
     setIsSaving(true);
     try {
       await updatePreferences({ emailNotifications: newValue });
-      toast.success(
-        newValue
-          ? "Email notifications enabled"
-          : "Email notifications disabled",
-      );
+      toast.success(newValue ? t("profile.emailNotifOn") : t("profile.emailNotifOff"));
     } catch {
       setEmailNotif(!newValue);
       toast.error("Failed to save preference. Please try again.");
@@ -86,26 +93,55 @@ export default function ProfilePage() {
     }
   };
 
+  const handleLanguageChange = async (code) => {
+    if (code === i18n.language) return;
+    i18n.changeLanguage(code);
+    setLangSaving(true);
+    try {
+      await updatePreferences({ preferredLanguage: code });
+    } catch {
+      toast.error("Failed to save language preference.");
+    } finally {
+      setLangSaving(false);
+    }
+  };
+
   const handleAvatarUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      toast.error("File size must be less than 5MB");
+      toast.error(
+        i18n.language === "ne"
+          ? "फाइल साइज ५MB भन्दा कम हुनुपर्छ"
+          : "File size must be less than 5MB",
+      );
       return;
     }
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file");
+      toast.error(
+        i18n.language === "ne"
+          ? "कृपया एउटा इमेज फाइल अपलोड गर्नुहोस्"
+          : "Please upload an image file",
+      );
       return;
     }
 
     setIsUploadingAvatar(true);
     try {
       await uploadAvatar(file);
-      toast.success("Avatar updated successfully");
+      toast.success(
+        i18n.language === "ne"
+          ? "अवतार सफलतापूर्वक अपडेट गरियो"
+          : "Avatar updated successfully",
+      );
     } catch {
-      toast.error("Failed to upload avatar. Please try again.");
+      toast.error(
+        i18n.language === "ne"
+          ? "अवतार अपलोड गर्न असफल भयो। फेरि प्रयास गर्नुहोस्।"
+          : "Failed to upload avatar. Please try again.",
+      );
     } finally {
       setIsUploadingAvatar(false);
     }
@@ -116,10 +152,18 @@ export default function ProfilePage() {
     setIsSaving(true);
     try {
       await updateProfile(editForm);
-      toast.success("Profile updated successfully");
+      toast.success(
+        i18n.language === "ne"
+          ? "प्रोफाइल सफलतापूर्वक अपडेट गरियो"
+          : "Profile updated successfully",
+      );
       setIsEditing(false);
     } catch {
-      toast.error("Failed to update profile. Please try again.");
+      toast.error(
+        i18n.language === "ne"
+          ? "प्रोफाइल अपडेट गर्न असफल भयो। फेरि प्रयास गर्नुहोस्।"
+          : "Failed to update profile. Please try again.",
+      );
     } finally {
       setIsSaving(false);
     }
@@ -147,13 +191,19 @@ export default function ProfilePage() {
   }
 
   const INFO_ROWS = [
-    { icon: User, label: "Full name", value: user.name },
-    { icon: Mail, label: "Email", value: user.email },
-    { icon: Phone, label: "Phone", value: user.phone || "Not set" },
-    { icon: MapPin, label: "Province", value: user.province || "Not set" },
-    { icon: MapPin, label: "District", value: user.district || "Not set" },
-    { icon: MapPin, label: "City", value: user.city || "Not set" },
+    { icon: User, label: t("profile.fullName"), value: user.name },
+    { icon: Mail, label: t("profile.email"), value: user.email },
+    { icon: Phone, label: t("profile.phone"), value: user.phone || t("profile.notSet") },
+    { icon: MapPin, label: t("profile.province"), value: user.province || t("profile.notSet") },
+    { icon: MapPin, label: t("auth:register.district"), value: user.district || t("profile.notSet") },
+    { icon: MapPin, label: t("auth:register.city"), value: user.city || t("profile.notSet") },
   ];
+
+  const roleLabel = user.role === "admin"
+    ? t("profile.administrator")
+    : user.role === "field_worker"
+    ? t("profile.fieldWorker")
+    : t("profile.citizen");
 
   const quickLinks = [
     ...(user.role !== "admin" && user.role !== "field_worker"
@@ -161,8 +211,8 @@ export default function ProfilePage() {
           {
             to: "/issues/me",
             icon: ClipboardList,
-            label: "My Reports",
-            sub: "View and manage issues you've reported",
+            label: t("nav.myReports"),
+            sub: t("profile.myReportsDesc"),
             color: "#16a34a",
             bg: "#f0fdf4",
           },
@@ -173,8 +223,8 @@ export default function ProfilePage() {
           {
             to: "/admin",
             icon: ShieldCheck,
-            label: "Admin Panel",
-            sub: "Access the municipality dashboard",
+            label: t("nav.admin"),
+            sub: t("profile.adminPanelDesc"),
             color: "#7c3aed",
             bg: "#f5f3ff",
           },
@@ -185,8 +235,8 @@ export default function ProfilePage() {
           {
             to: "/field",
             icon: HardHat,
-            label: "My Assignments",
-            sub: "View issues dispatched to you",
+            label: t("nav.fieldTasks"),
+            sub: t("profile.fieldTasksDesc"),
             color: "#16a34a",
             bg: "#f0fdf4",
           },
@@ -204,18 +254,17 @@ export default function ProfilePage() {
             text-xs font-semibold px-3 py-1.5 rounded-full border border-[#bbf7d0] mb-5"
           >
             <User size={11} />
-            Your DigitalSewa account
+            {i18n.language === "ne" ? "तपाईंको डिजिटल सेवा खाता" : "Your DigitalSewa account"}
           </div>
 
           <h1
             className="text-3xl md:text-4xl font-bold text-[#0f172a]
             tracking-tight leading-tight mb-3"
           >
-            My Profile
+            {t("profile.title")}
           </h1>
           <p className="text-[#475569] text-base md:text-lg max-w-2xl leading-relaxed">
-            Manage your account details and notification preferences in one
-            place.
+            {t("profile.subtitle")}
           </p>
         </div>
       </section>
@@ -250,7 +299,7 @@ export default function ProfilePage() {
                   className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#16a34a]
                     text-white flex items-center justify-center cursor-pointer
                     hover:bg-[#15803d] transition-colors shadow-sm"
-                  title="Upload avatar"
+                  title={i18n.language === "ne" ? "अवतार अपलोड गर्नुहोस्" : "Upload avatar"}
                 >
                   {isUploadingAvatar ? (
                     <Loader2 size={14} className="animate-spin" />
@@ -280,17 +329,17 @@ export default function ProfilePage() {
                   borderColor: ROLE_CONFIG[user.role]?.border ?? "#e2e8f0",
                 }}
               >
-                {ROLE_CONFIG[user.role]?.label ?? "Citizen"}
+                {roleLabel}
               </span>
             </div>
 
             <div className="mt-7 pt-6 border-t border-[#f1f5f9] space-y-3">
               {[
                 user.province && {
-                  label: "Province",
+                  label: t("profile.province"),
                   value: user.province,
                 },
-                user.phone && { label: "Phone", value: user.phone },
+                user.phone && { label: t("profile.phone"), value: user.phone },
               ]
                 .filter(Boolean)
                 .map(({ label, value }) => (
@@ -315,18 +364,18 @@ export default function ProfilePage() {
               <div className="px-6 py-5 border-b border-[#f1f5f9] flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-bold text-[#0f172a]">
-                    Account Information
+                    {t("profile.accountInfo")}
                   </h3>
                   <p className="text-sm text-[#94a3b8] mt-0.5">
-                    Your registered details on DigitalSewa
+                    {i18n.language === "ne" ? "डिजिटल सेवामा तपाईंको दर्ता गरिएको विवरण" : "Your registered details on DigitalSewa"}
                   </p>
                 </div>
                 {!isEditing && (
                   <button
                     onClick={() => setIsEditing(true)}
-                    className="text-sm font-semibold text-[#16a34a] hover:text-[#15803d] transition-colors"
+                    className="text-sm font-semibold text-[#16a34a] hover:text-[#15803d] transition-colors cursor-pointer"
                   >
-                    Edit Profile
+                    {t("actions.edit")}
                   </button>
                 )}
               </div>
@@ -335,7 +384,7 @@ export default function ProfilePage() {
                 <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
                   <div>
                     <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                      Full name
+                      {t("profile.fullName")}
                     </label>
                     <input
                       type="text"
@@ -349,7 +398,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                      Phone number
+                      {t("profile.phone")}
                     </label>
                     <input
                       type="tel"
@@ -363,7 +412,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                      Province
+                      {t("profile.province")}
                     </label>
                     <div className="relative">
                       <select
@@ -380,7 +429,7 @@ export default function ProfilePage() {
                         className="w-full h-10 px-3 rounded-lg border border-[#e2e8f0] text-sm text-[#0f172a] outline-none focus:border-[#16a34a] focus:ring-2 focus:ring-[#16a34a]/15 transition-all bg-white cursor-pointer appearance-none"
                         style={{ paddingRight: "2.5rem" }}
                       >
-                        <option value="">Select your province</option>
+                        <option value="">{t("auth:register.provincePlaceholder")}</option>
                         {Object.keys(NEPAL_LOCATIONS).map((p) => (
                           <option key={p} value={p}>
                             {p}
@@ -395,7 +444,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                      District
+                      {t("auth:register.district")}
                     </label>
                     <div className="relative">
                       <select
@@ -414,8 +463,8 @@ export default function ProfilePage() {
                       >
                         <option value="">
                           {editForm.province
-                            ? "Select your district"
-                            : "Select a province first"}
+                            ? t("auth:register.districtPlaceholder")
+                            : t("auth:register.districtPlaceholderNoProvince")}
                         </option>
                         {districts.map((d) => (
                           <option key={d} value={d}>
@@ -431,7 +480,7 @@ export default function ProfilePage() {
                   </div>
                   <div>
                     <label className="block text-xs font-semibold text-[#475569] mb-1.5">
-                      City/Municipality
+                      {t("auth:register.city")}
                     </label>
                     <div className="relative">
                       <select
@@ -445,8 +494,8 @@ export default function ProfilePage() {
                       >
                         <option value="">
                           {selectedDistrict
-                            ? "Select your city"
-                            : "Select a district first"}
+                            ? t("auth:register.cityPlaceholder")
+                            : t("auth:register.cityPlaceholderNoDistrict")}
                         </option>
                         {cities.map((c) => (
                           <option key={c} value={c}>
@@ -464,25 +513,25 @@ export default function ProfilePage() {
                     <button
                       type="submit"
                       disabled={isSaving}
-                      className="flex-1 h-10 rounded-lg bg-[#16a34a] hover:bg-[#15803d] text-white font-semibold text-sm transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="flex-1 h-10 rounded-lg bg-[#16a34a] hover:bg-[#15803d] text-white font-semibold text-sm transition-all shadow-sm disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer"
                     >
                       {isSaving ? (
                         <>
                           <Loader2 size={14} className="animate-spin" />
-                          Saving...
+                          {t("profile.saving")}
                         </>
                       ) : (
-                        "Save Changes"
+                        t("actions.save")
                       )}
                     </button>
                     <button
                       type="button"
                       onClick={handleEditCancel}
                       disabled={isSaving}
-                      className="px-4 h-10 rounded-lg border border-[#e2e8f0] text-[#475569] font-semibold text-sm hover:bg-[#f8fafc] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2"
+                      className="px-4 h-10 rounded-lg border border-[#e2e8f0] text-[#475569] font-semibold text-sm hover:bg-[#f8fafc] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center gap-2 cursor-pointer"
                     >
                       <X size={14} />
-                      Cancel
+                      {t("actions.cancel")}
                     </button>
                   </div>
                 </form>
@@ -521,10 +570,10 @@ export default function ProfilePage() {
             >
               <div className="px-6 py-5 border-b border-[#f1f5f9]">
                 <h3 className="text-lg font-bold text-[#0f172a]">
-                  Notification Preferences
+                  {t("profile.notificationPrefs")}
                 </h3>
                 <p className="text-sm text-[#94a3b8] mt-0.5">
-                  Choose how DigitalSewa keeps you updated
+                  {t("profile.notificationPrefsDesc", { defaultValue: "Choose how DigitalSewa keeps you updated" })}
                 </p>
               </div>
 
@@ -553,11 +602,10 @@ export default function ProfilePage() {
                     <div className="flex items-start justify-between gap-4">
                       <div>
                         <p className="text-sm font-semibold text-[#0f172a]">
-                          Email notifications
+                          {t("profile.emailNotifTitle")}
                         </p>
                         <p className="text-xs text-[#64748b] mt-1 leading-relaxed max-w-md">
-                          Receive email updates when your report is verified,
-                          assigned, resolved, or rejected by the municipality.
+                          {t("profile.emailNotifDesc")}
                         </p>
                       </div>
                       <Toggle
@@ -572,17 +620,64 @@ export default function ProfilePage() {
                       style={{ color: emailNotif ? "#16a34a" : "#94a3b8" }}
                     >
                       {isSaving ? (
-                        "Saving…"
+                        t("profile.saving")
                       ) : emailNotif ? (
                         <>
                           <CheckCircle size={12} />
-                          You will receive status updates by email
+                          {t("profile.emailNotifOn")}
                         </>
                       ) : (
-                        "Email notifications are turned off"
+                        t("profile.emailNotifOff")
                       )}
                     </p>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Language preferences */}
+            <div
+              className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm
+              overflow-hidden hover:shadow-md transition-shadow"
+            >
+              <div className="px-6 py-5 border-b border-[#f1f5f9]">
+                <h3 className="text-lg font-bold text-[#0f172a]">
+                  {t("profile.languagePrefs")}
+                </h3>
+                <p className="text-sm text-[#94a3b8] mt-0.5">
+                  {t("profile.languageDesc")}
+                </p>
+              </div>
+
+              <div className="p-6">
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="w-9 h-9 rounded-lg bg-[#f8fafc] border border-[#e2e8f0]
+                    flex items-center justify-center shrink-0">
+                    <Languages size={16} className="text-[#64748b]" />
+                  </div>
+                  <p className="text-xs text-[#64748b] leading-relaxed flex-1">
+                    {t("profile.languageDesc")}
+                  </p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {LANGUAGES.map((lang) => (
+                    <button
+                      key={lang.code}
+                      onClick={() => handleLanguageChange(lang.code)}
+                      disabled={langSaving}
+                      className={`flex items-center justify-between gap-2 px-4 py-3
+                        rounded-xl border-2 transition-all disabled:opacity-60 cursor-pointer
+                        ${i18n.language === lang.code
+                          ? "border-[#16a34a] bg-[#f0fdf4]"
+                          : "border-[#e2e8f0] hover:border-[#cbd5e1]"
+                        }`}
+                    >
+                      <span className="flex items-center gap-2 text-sm font-medium text-[#0f172a]">
+                        <span>{lang.flag}</span>{lang.label}
+                      </span>
+                      {i18n.language === lang.code && <Check size={16} className="text-[#16a34a]" />}
+                    </button>
+                  ))}
                 </div>
               </div>
             </div>
@@ -594,10 +689,10 @@ export default function ProfilePage() {
             >
               <div className="px-6 py-5 border-b border-[#f1f5f9]">
                 <h3 className="text-lg font-bold text-[#0f172a]">
-                  Quick Links
+                  {t("profile.quickLinks")}
                 </h3>
                 <p className="text-sm text-[#94a3b8] mt-0.5">
-                  Jump to your reports and tools
+                  {i18n.language === "ne" ? "आफ्नो रिपोर्ट र सुविधाहरूमा जानुहोस्" : "Jump to your reports and tools"}
                 </p>
               </div>
 

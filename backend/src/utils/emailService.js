@@ -7,8 +7,20 @@ import {
   resolvedTemplate,
   rejectedTemplate,
   assignedTemplate,
+  assignedTemplateNe,
+  inProgressTemplateNe,
+  rejectedTemplateNe,
+  resolvedTemplateNe,
+  verifiedTemplateNe,
 } from "./emailTemplates.js";
 import User from "../models/User.js";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const logoPath = path.resolve(__dirname, "../../../frontend/public/icon.png");
 
 // ── Transporter
 let transporter = null;
@@ -38,11 +50,21 @@ if (ENV.GMAIL_USER && ENV.GMAIL_APP_PASSWORD) {
 const sendEmail = async ({ to, subject, html }) => {
   if (!transporter) return; // Email not configured — skip silently
 
+  const attachments = [];
+  if (fs.existsSync(logoPath)) {
+    attachments.push({
+      filename: "icon.png",
+      path: logoPath,
+      cid: "logo",
+    });
+  }
+
   await transporter.sendMail({
-    from: `"DigitalSewa 📍" <${ENV.GMAIL_USER}>`,
+    from: `"DigitalSewa" <${ENV.GMAIL_USER}>`,
     to,
     subject,
     html,
+    attachments,
   });
 };
 
@@ -52,67 +74,84 @@ export const sendStatusChangeEmail = async (
   newStatus,
   rejectionReason,
 ) => {
-  // Only these four statuses warrant an email — "open" is the initial state
-  // and is never transitioned TO from the admin panel.
   const NOTIFIABLE_STATUSES = [
     "verified",
     "in-progress",
     "resolved",
     "rejected",
+    "assigned",
   ];
   if (!NOTIFIABLE_STATUSES.includes(newStatus)) return;
 
-  // Fetch fresh issue data with author email.
-  // We refetch rather than relying on the caller's data because the issue
-  // was just updated and we want the latest state including author info.
   const issue = await Issue.findById(issueId)
-    .populate("author", "name email emailNotifications")
+    .populate("author", "name email emailNotifications preferredLanguage")
     .lean();
 
-  // Guard clauses — skip silently in each case
   if (!issue) return; // Issue deleted mid-flight
   if (!issue.author?.email) return; // No email address on record
   if (!issue.author?.emailNotifications) return; // User opted out of emails
 
-  // Build the frontend URL used in CTA buttons.
-  // CLIENT_URL is the deployed Vercel URL in production.
   const frontendUrl = ENV.CLIENT_URL || "http://localhost:5173";
 
   // Select the template based on the new status.
   let emailData;
   switch (newStatus) {
     case "verified":
-      emailData = verifiedTemplate(issue, frontendUrl);
+      emailData =
+        lang === "ne"
+          ? verifiedTemplateNe(issue, frontendUrl)
+          : verifiedTemplate(issue, frontendUrl);
       break;
     case "in-progress":
-      emailData = inProgressTemplate(issue, frontendUrl);
+      emailData =
+        lang === "ne"
+          ? inProgressTemplateNe(issue, frontendUrl)
+          : inProgressTemplate(issue, frontendUrl);
       break;
     case "resolved":
-      emailData = resolvedTemplate(issue, frontendUrl);
+      emailData =
+        lang === "ne"
+          ? resolvedTemplateNe(issue, frontendUrl)
+          : resolvedTemplate(issue, frontendUrl);
       break;
     case "rejected":
-      emailData = rejectedTemplate(issue, rejectionReason, frontendUrl);
+      emailData =
+        lang === "ne"
+          ? rejectedTemplateNe(issue, rejectionReason, frontendUrl)
+          : rejectedTemplate(issue, rejectionReason, frontendUrl);
+      break;
+    case "assigned":
+      emailData =
+        lang === "ne"
+          ? assignedTemplateNe(issue, frontendUrl)
+          : assignedTemplate(issue, frontendUrl);
       break;
     default:
       return;
   }
 
   await sendEmail({ to: issue.author.email, ...emailData });
-  console.log(`Email sent to ${issue.author.email} — status: ${newStatus}`);
+  console.log(`Email sent to ${issue.author.email} — status: ${newStatus} [${lang}]`);
 };
 
 export const sendAssignmentEmail = async (issueId, fieldWorkerId) => {
   const [issue, fieldWorker] = await Promise.all([
     Issue.findById(issueId).lean(),
-    User.findById(fieldWorkerId).select("name email emailNotifications").lean(),
+    User.findById(fieldWorkerId)
+      .select("name email emailNotifications preferredLanguage")
+      .lean(),
   ]);
+  
 
   if (!issue) return; // Issue deleted mid-flight
   if (!fieldWorker?.email) return; // No email on record — skip silently
   if (!fieldWorker.emailNotifications) return; // User opted out of emails
 
   const frontendUrl = ENV.CLIENT_URL || "http://localhost:5173";
-  const emailData = assignedTemplate(issue, frontendUrl);
+  const emailData =
+    fieldWorker.preferredLanguage === "ne"
+      ? assignedTemplateNe(issue, frontendUrl)
+      : assignedTemplate(issue, frontendUrl);
 
   await sendEmail({ to: fieldWorker.email, ...emailData });
   console.log(

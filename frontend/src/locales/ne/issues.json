@@ -1,0 +1,83 @@
+{
+  "categories": {
+    "Road Damage": "सडक क्षति",
+    "Garbage": "फोहोर",
+    "Water Issue": "पानी समस्या",
+    "Street Light": "सडक बत्ती",
+    "Illegal Construction": "अवैध निर्माण",
+    "Public Space": "सार्वजनिक स्थान",
+    "Other": "अन्य"
+  },
+  "categoryDescriptions": {
+    "Road Damage": "खाल्डाखुल्डी, चिरा, सतह क्षति",
+    "Garbage": "अवैध फोहोर फाल्ने, भरिएका डस्टविन",
+    "Water Issue": "फुटेको पाइप, ढल, बाढी",
+    "Street Light": "बिग्रेको वा नभएको बत्ती",
+    "Illegal Construction": "अनधिकृत संरचनाहरू",
+    "Public Space": "क्षतिग्रस्त पार्क, सार्वजनिक सुविधाहरू"
+  },
+  "statuses": {
+    "open": "खुला",
+    "verified": "प्रमाणित",
+    "in-progress": "प्रगतिमा",
+    "resolved": "समाधान भयो",
+    "rejected": "अस्वीकृत"
+  },
+  "priorities": {
+    "low": "न्यून",
+    "medium": "मध्यम",
+    "high": "उच्च",
+    "critical": "अति गम्भीर"
+  },
+  "list": {
+    "title": "सामुदायिक समस्याहरू",
+    "showingCount": "{{count}} समस्याहरू देखाइँदैछ",
+    "searchPlaceholder": "समस्या, स्थान खोज्नुहोस्…",
+    "allCategories": "सबै वर्गहरू",
+    "allProvinces": "सबै प्रदेशहरू",
+    "allDistricts": "सबै जिल्लाहरू",
+    "allPriorities": "सबै प्राथमिकताहरू",
+    "sortNewest": "क्रम: नयाँ",
+    "sortOldest": "क्रम: पुरानो",
+    "sortUpvoted": "क्रम: बढी मत",
+    "noResultsTitle": "कुनै नतिजा फेला परेन",
+    "noResultsDesc": "तपाईंको फिल्टरसँग मिल्ने कुनै समस्या छैन। खोज परिवर्तन गर्नुहोस् वा फिल्टर हटाउनुहोस्।",
+    "emptyTitle": "अहिलेसम्म कुनै समस्या रिपोर्ट भएको छैन",
+    "emptyDesc": "नागरिक समस्या रिपोर्ट गर्ने पहिलो व्यक्ति बन्नुहोस्।",
+    "reportFirst": "समस्या रिपोर्ट गर्नुहोस्"
+  },
+  "card": {
+    "upvotes": "मतहरू",
+    "reportedBy": "रिपोर्टकर्ता"
+  },
+  "create": {
+    "step1": "विवरण",
+    "step2": "फोटो",
+    "step3": "स्थान",
+    "heading": "समस्या रिपोर्ट गर्नुहोस्",
+    "stepLabel": "चरण {{current}} / {{total}}: {{label}}",
+    "titleLabel": "समस्याको शीर्षक",
+    "titlePlaceholder": "समस्या संक्षेपमा वर्णन गर्नुहोस्",
+    "categoryLabel": "वर्ग",
+    "priorityLabel": "प्राथमिकता स्तर",
+    "descriptionLabel": "विवरण",
+    "descriptionPlaceholder": "समस्या विस्तृत रूपमा वर्णन गर्नुहोस्। तपाईंले के देख्नुभयो? कति समयदेखि छ? कसलाई असर परेको छ?",
+    "nextPhoto": "अर्को: फोटो थप्नुहोस्",
+    "nextLocation": "अर्को: स्थान सेट गर्नुहोस्",
+    "photoHeading": "फोटो थप्नुहोस्",
+    "photoSubtitle": "स्पष्ट फोटोले अधिकारीहरूलाई समस्या छिटो मूल्याङ्कन गर्न मद्दत गर्छ।",
+    "photoOptionalNote": "फोटो सिफारिस गरिन्छ तर पेश गर्न अनिवार्य छैन।",
+    "locationHeading": "स्थान सेट गर्नुहोस्",
+    "locationSubtitle": "समस्या रहेको ठाउँमा नक्सामा ट्याप गर्नुहोस्।",
+    "useMyLocation": "मेरो हालको स्थान प्रयोग गर्नुहोस्",
+    "locationPinned": "स्थान पिन गरियो",
+    "locationRequired": "कृपया माथिको नक्सामा स्थान सेट गर्नुहोस्",
+    "submitReport": "रिपोर्ट पेश गर्नुहोस्",
+    "submitting": "पेश गर्दैछ…",
+    "successTitle": "समस्या रिपोर्ट भयो!",
+    "successBody": "तपाईंको रिपोर्ट सफलतापूर्वक पेश भयो।",
+    "successSub": "नगरपालिकाले ४८ घण्टाभित्र समीक्षा गर्नेछ।",
+    "viewMyReport": "मेरो रिपोर्ट हेर्नुहोस्",
+    "reportAnother": "अर्को समस्या रिपोर्ट गर्नुहोस्"
+  }
+}
