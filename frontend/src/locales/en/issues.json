@@ -1,0 +1,83 @@
+{
+  "categories": {
+    "Road Damage": "Road Damage",
+    "Garbage": "Garbage",
+    "Water Issue": "Water Issue",
+    "Street Light": "Street Light",
+    "Illegal Construction": "Illegal Construction",
+    "Public Space": "Public Space",
+    "Other": "Other"
+  },
+  "categoryDescriptions": {
+    "Road Damage": "Potholes, cracks, surface damage",
+    "Garbage": "Illegal dumping, overflowing bins",
+    "Water Issue": "Burst pipes, drainage, flooding",
+    "Street Light": "Broken or missing lighting",
+    "Illegal Construction": "Unauthorized structures",
+    "Public Space": "Damaged parks, public facilities"
+  },
+  "statuses": {
+    "open": "Open",
+    "verified": "Verified",
+    "in-progress": "In Progress",
+    "resolved": "Resolved",
+    "rejected": "Rejected"
+  },
+  "priorities": {
+    "low": "Low",
+    "medium": "Medium",
+    "high": "High",
+    "critical": "Critical"
+  },
+  "list": {
+    "title": "Community Issues",
+    "showingCount": "Showing {{count}} issues",
+    "searchPlaceholder": "Search issues, locations…",
+    "allCategories": "All Categories",
+    "allProvinces": "All Provinces",
+    "allDistricts": "All Districts",
+    "allPriorities": "All Priorities",
+    "sortNewest": "Sort: Newest",
+    "sortOldest": "Sort: Oldest",
+    "sortUpvoted": "Sort: Most Upvoted",
+    "noResultsTitle": "No results found",
+    "noResultsDesc": "No issues match your current filters. Try adjusting your search or clearing the filters.",
+    "emptyTitle": "No issues reported yet",
+    "emptyDesc": "Be the first to report a civic issue.",
+    "reportFirst": "Report an issue"
+  },
+  "card": {
+    "upvotes": "upvotes",
+    "reportedBy": "Reported by"
+  },
+  "create": {
+    "step1": "Details",
+    "step2": "Photo",
+    "step3": "Location",
+    "heading": "Report an Issue",
+    "stepLabel": "Step {{current}} of {{total}}: {{label}}",
+    "titleLabel": "Issue Title",
+    "titlePlaceholder": "Briefly describe the issue",
+    "categoryLabel": "Category",
+    "priorityLabel": "Priority Level",
+    "descriptionLabel": "Description",
+    "descriptionPlaceholder": "Describe the issue in detail. What did you see? How long has it been there? Who is affected?",
+    "nextPhoto": "Next: Add Photo",
+    "nextLocation": "Next: Set Location",
+    "photoHeading": "Add a photo",
+    "photoSubtitle": "A clear photo helps authorities assess the issue faster.",
+    "photoOptionalNote": "Photo is recommended but not required to submit.",
+    "locationHeading": "Set the location",
+    "locationSubtitle": "Tap the map where the issue is located.",
+    "useMyLocation": "Use my current location",
+    "locationPinned": "Location pinned",
+    "locationRequired": "Please set a location on the map above",
+    "submitReport": "Submit Report",
+    "submitting": "Submitting…",
+    "successTitle": "Issue Reported!",
+    "successBody": "Your report has been submitted successfully.",
+    "successSub": "The municipality will review it within 48 hours.",
+    "viewMyReport": "View My Report",
+    "reportAnother": "Report Another Issue"
+  }
+}

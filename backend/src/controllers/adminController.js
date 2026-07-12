@@ -287,71 +287,72 @@ export const getFieldWorkers = async (req, res, next) => {
     const query = { role: "field_worker" };
     if (department) query.department = department;
 
-    //  PATCH /api/admin/issues/:id/assign
-    // Assigns an issue to a field worker. This is the dispatch action.
-    export const assignIssue = async (req, res, next) => {
-      try {
-        checkValidation(req, res);
-        const { fieldWorkerId } = req.body;
+    res.status(200).json({ success: true, issue });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid issue ID format" });
+    }
+    next(error);
+  }
+};
 
-        const [issue, fieldWorker] = await Promise.all([
-          Issue.findById(req.params.id),
-          User.findOne({ _id: fieldWorkerId, role: "field_worker" }),
-        ]);
+//  PATCH /api/admin/issues/:id/assign
+// Assigns an issue to a field worker. This is the dispatch action.
+export const assignIssue = async (req, res, next) => {
+  try {
+    checkValidation(req, res);
+    const { fieldWorkerId } = req.body;
 
-        if (!issue) {
-          return res
-            .status(404)
-            .json({ success: false, message: "Issue not found" });
-        }
-        if (!fieldWorker) {
-          return res
-            .status(404)
-            .json({ success: false, message: "Field worker not found" });
-        }
+    const [issue, fieldWorker] = await Promise.all([
+      Issue.findById(req.params.id),
+      User.findOne({ _id: fieldWorkerId, role: "field_worker" }),
+    ]);
 
-        if (["resolved", "rejected"].includes(issue.status)) {
-          return res.status(400).json({
-            success: false,
-            message:
-              "Cannot reassign an issue that has already been resolved or rejected",
-          });
-        }
+    if (!issue) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Issue not found" });
+    }
+    if (!fieldWorker) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Field worker not found" });
+    }
 
-        const previousStatus = issue.status;
+    if (["resolved", "rejected"].includes(issue.status)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Cannot reassign an issue that has already been resolved or rejected",
+      });
+    }
 
-        issue.assignedTo = fieldWorker._id;
-        issue.assignedBy = req.user._id;
-        issue.assignedAt = new Date();
+    const previousStatus = issue.status;
 
-        if (issue.status === "open") {
-          issue.status = "verified";
-        }
+    issue.assignedTo = fieldWorker._id;
+    issue.assignedBy = req.user._id;
+    issue.assignedAt = new Date();
 
-        await issue.save();
-        await issue.populate("author", "name email");
-        await issue.populate("assignedTo", "name department");
+    if (issue.status === "open") {
+      issue.status = "verified";
+    }
 
-        sendAssignmentEmail(issue._id, fieldWorker._id).catch((err) =>
-          console.error(`Assignment email failed: ${err.message}`),
-        );
+    await issue.save();
+    await issue.populate("author", "name email");
+    await issue.populate("assignedTo", "name department");
 
-        if (issue.status !== previousStatus) {
-          sendStatusChangeEmail(issue._id, issue.status, null).catch((err) =>
-            console.error(`Status email failed: ${err.message}`),
-          );
-        }
+    sendAssignmentEmail(issue._id, fieldWorker._id).catch((err) =>
+      console.error(`Assignment email failed: ${err.message}`),
+    );
 
-        res.status(200).json({ success: true, issue });
-      } catch (error) {
-        if (error.name === "CastError") {
-          return res
-            .status(400)
-            .json({ success: false, message: "Invalid issue ID format" });
-        }
-        next(error);
-      }
-    };
+    if (issue.status !== previousStatus) {
+      sendStatusChangeEmail(issue._id, issue.status, null).catch((err) =>
+        console.error(`Status email failed: ${err.message}`),
+      );
+    }
+
     res.status(200).json({ success: true, issue });
   } catch (error) {
     if (error.name === "CastError") {

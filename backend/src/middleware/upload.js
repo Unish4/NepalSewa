@@ -7,7 +7,7 @@ import path from "node:path";
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 const storage = multer.memoryStorage();
-const proofUploadDir = path.join(os.tmpdir(), "smartnepal-proof-uploads");
+const proofUploadDir = path.join(os.tmpdir(), "DigitalSewa-proof-uploads");
 
 mkdirSync(proofUploadDir, { recursive: true });
 

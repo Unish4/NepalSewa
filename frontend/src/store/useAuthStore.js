@@ -8,6 +8,7 @@ import {
   updateProfileRequest,
   uploadAvatarRequest,
 } from "../services/authService.js";
+import i18n from "../i18n/index.js";
 
 const useAuthStore = create(
   persist(
@@ -21,6 +22,9 @@ const useAuthStore = create(
         try {
           const res = await registerUser(userData);
           set({ user: res.user, isAuthenticated: true });
+          if(res.user?.preferredLanguage) {
+            i18n.changeLanguage(res.user.preferredLanguage);
+          }
           return res;
         } finally {
           set({ isLoading: false });

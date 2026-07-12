@@ -3,15 +3,17 @@ import {
   Bell,
   Plus,
   FileText,
-  Activity,
   ShieldCheck,
   LogOut,
   User,
   HardHat,
 } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore";
+import { useTranslation } from "react-i18next";
+import LanguageSwitcher from "./LanguageSwitcher";
 
 const Navbar = () => {
+  const { t, i18n } = useTranslation("navbar");
   const navigate = useNavigate();
   const { isAuthenticated, user, logout } = useAuthStore();
 
@@ -28,15 +30,26 @@ const Navbar = () => {
   const isFieldWorker = user?.role === "field_worker";
 
   const navLinks = [
-    { to: "/issues", label: "Issues", Icon: FileText },
+    { to: "/issues", label: t("issues"), Icon: FileText },
     ...(isAdmin
-      ? [{ to: "/admin", label: "Admin", Icon: ShieldCheck, admin: true }]
-      : []),
-    ...(!isAdmin && !isFieldWorker
-      ? [{ to: "/issues/me", label: "My Reports", Icon: Activity }]
+      ? [
+          {
+            to: "/admin",
+            label: t("admin"),
+            Icon: ShieldCheck,
+            admin: true,
+          },
+        ]
       : []),
     ...(isFieldWorker
-      ? [{ to: "/field", label: "Field Tasks", Icon: HardHat, field: true }]
+      ? [
+          {
+            to: "/field",
+            label: t("fieldTasks"),
+            Icon: HardHat,
+            field: true,
+          },
+        ]
       : []),
   ];
 
@@ -51,7 +64,15 @@ const Navbar = () => {
           <img src="/icon.png" alt="" className="w-full h-full rounded-lg" />
         </div>
         <span className="font-bold text-[#0f172a] text-[15px] tracking-tight">
-          Digital<span className="text-[#16a34a]">Sewa</span>
+          {i18n.language === "ne" ? (
+            <>
+              डिजिटल<span className="text-[#16a34a]"> सेवा</span>
+            </>
+          ) : (
+            <>
+              Digital<span className="text-[#16a34a]">Sewa</span>
+            </>
+          )}
         </span>
       </Link>
 
@@ -60,7 +81,7 @@ const Navbar = () => {
         <div className="hidden md:flex items-center gap-1">
           {navLinks.map(({ to, label, Icon, admin, field }) => (
             <NavLink
-              key={label}
+              key={to}
               to={to}
               className={({ isActive }) =>
                 `flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
@@ -87,6 +108,7 @@ const Navbar = () => {
 
       {/* Right actions */}
       <div className="ml-auto flex items-center gap-3">
+        <LanguageSwitcher />
         {isAuthenticated ? (
           <>
             {/* Report issue - only for citizen users (not admin or field workers) */}
@@ -95,19 +117,19 @@ const Navbar = () => {
                 onClick={() => navigate("/issues/new")}
                 className="flex items-center gap-2 px-4 h-9 rounded-lg
                   bg-[#16a34a] hover:bg-[#15803d] text-white text-sm
-                  font-semibold transition-all shadow-sm hover:shadow-md"
+                  font-semibold transition-all shadow-sm hover:shadow-md cursor-pointer"
               >
                 <Plus size={15} />
-                <span className="hidden sm:inline">Report Issue</span>
-                <span className="sm:hidden">Report</span>
+                <span className="hidden sm:inline">{t("reportIssue")}</span>
+                <span className="sm:hidden">{t("report")}</span>
               </button>
             )}
 
             {/* Notification bell */}
             <button
               className="relative w-9 h-9 rounded-lg hover:bg-[#f8fafc]
-              text-[#475569] flex items-center justify-center transition-colors"
-              title="Notifications"
+              text-[#475569] flex items-center justify-center transition-colors cursor-pointer"
+              title={t("notifications")}
             >
               <Bell size={17} />
               <span
@@ -122,7 +144,7 @@ const Navbar = () => {
               className="w-9 h-9 rounded-full bg-[#f0fdf4] text-[#16a34a]
                 font-bold text-xs border border-[#bbf7d0] flex items-center
                 justify-center hover:bg-[#dcfce7] transition-colors"
-              title={`${user?.name} — View profile`}
+              title={`${user?.name} — ${t("viewProfile")}`}
             >
               {user?.avatar ? (
                 <img
@@ -138,11 +160,11 @@ const Navbar = () => {
             <button
               onClick={handleLogout}
               className="hidden sm:flex items-center gap-1.5 text-sm
-                font-medium text-[#94a3b8] hover:text-red-500 transition-colors px-2 py-1.5 rounded-lg hover:bg-red-50"
-              title="Sign out"
+                font-medium text-[#94a3b8] hover:text-red-500 transition-colors px-2 py-1.5 rounded-lg hover:bg-red-50 cursor-pointer"
+              title={t("signOut")}
             >
               <LogOut size={13} />
-              <span>Sign out</span>
+              <span>{t("signOut")}</span>
             </button>
           </>
         ) : (
@@ -153,7 +175,7 @@ const Navbar = () => {
                 hover:text-[#0f172a] transition-colors px-4 py-2 rounded-lg
                 hover:bg-[#f8fafc]"
             >
-              Sign in
+              {t("signIn")}
             </Link>
             <Link
               to="/register"
@@ -161,7 +183,7 @@ const Navbar = () => {
                 bg-[#16a34a] hover:bg-[#15803d] text-white text-sm
                 font-semibold transition-all shadow-sm hover:shadow-md"
             >
-              Get started
+              {t("getStarted")}
             </Link>
           </>
         )}

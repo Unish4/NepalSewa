@@ -1,55 +1,57 @@
-const baseWrapper = (content) => `
+const baseWrapper = (content, lang = "en") => {
+  const footerText =
+    lang === "ne"
+      ? `तपाईंले यो सूचना पाउनुभएको छ किनभने तपाईंले डिजिटल सेवा मार्फत नागरिक समस्या रिपोर्ट गर्नुभएको थियो।
+       <br/>© ${new Date().getFullYear()} डिजिटल सेवा · नेपालका ७ प्रदेशका नागरिकहरूलाई सेवा दिँदै।`
+      : `You are receiving this notification because you reported a civic issue
+       via DigitalSewa.
+       <br/>© ${new Date().getFullYear()} DigitalSewa · Serving citizens across 7 provinces of Nepal.`;
+
+  const brandName = lang === "ne" ? "डिजिटल सेवा" : "DigitalSewa";
+
+  return `
 <!DOCTYPE html>
-<html lang="en">
+<html lang="${lang}">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DigitalSewa Notification</title>
+  <title>${brandName} Notification</title>
 </head>
-<body style="margin:0;padding:0;background:#f8fafc;font-family:Arial,Helvetica,sans-serif;">
+<body style="margin:0;padding:0;background:#f8fafc;
+  font-family:${lang === "ne" ? "'Noto Sans Devanagari'," : ""}Arial,Helvetica,sans-serif;">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;padding:32px 16px;">
     <tr>
       <td align="center">
         <table width="560" cellpadding="0" cellspacing="0"
           style="background:#ffffff;border-radius:12px;border:1px solid #e2e8f0;overflow:hidden;">
-
-          <!-- Header band -->
           <tr>
-            <td style="background:#15803d;padding:20px 28px;">
-              <table cellpadding="0" cellspacing="0">
+            <td style="padding:24px 28px;border-bottom:1px solid #f1f5f9;background:#ffffff;">
+              <table cellpadding="0" cellspacing="0" border="0">
                 <tr>
-                  <td style="background:#ffffff20;border-radius:8px;padding:8px;width:32px;text-align:center;vertical-align:middle;">
-                    <span style="font-size:16px;line-height:1;">📍</span>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <img src="cid:logo" alt="Logo" width="32" height="32" style="display:block;border:0;border-radius:6px;" />
                   </td>
-                  <td style="padding-left:10px;vertical-align:middle;">
-                    <span style="font-size:17px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">
-                      Smart<span style="color:#86efac;">Nepal</span>
+                  <td style="vertical-align:middle;">
+                    <span style="font-size:18px;font-weight:700;color:#0f172a;letter-spacing:-0.3px;">
+                      ${brandName}
                     </span>
                   </td>
                 </tr>
               </table>
             </td>
           </tr>
-
-          <!-- Body -->
           <tr>
             <td style="padding:32px 28px;">
               ${content}
             </td>
           </tr>
-
-          <!-- Footer -->
           <tr>
             <td style="padding:20px 28px;border-top:1px solid #f1f5f9;background:#f8fafc;">
               <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6;">
-                You are receiving this notification because you reported a civic issue
-                via DigitalSewa.
-                <br/>
-                © ${new Date().getFullYear()} DigitalSewa · Serving citizens across 7 provinces of Nepal.
+                ${footerText}
               </p>
             </td>
           </tr>
-
         </table>
       </td>
     </tr>
@@ -57,8 +59,8 @@ const baseWrapper = (content) => `
 </body>
 </html>
 `;
+};
 
-// ── Status badge HTML
 const STATUS_STYLES = {
   verified: {
     bg: "#f5f3ff",
@@ -86,21 +88,29 @@ const STATUS_STYLES = {
   },
 };
 
-const statusBadge = (status) => {
+// ne label overrides — used only when lang === "ne"
+const STATUS_LABELS_NE = {
+  verified: "प्रमाणित",
+  "in-progress": "प्रगतिमा",
+  resolved: "समाधान भयो",
+  rejected: "अस्वीकृत",
+};
+
+const statusBadge = (status, lang = "en") => {
   const s = STATUS_STYLES[status];
   if (!s) return "";
+  const label = lang === "ne" ? STATUS_LABELS_NE[status] : s.label;
   return `
     <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;
       border-radius:20px;font-size:13px;font-weight:600;
       background:${s.bg};color:${s.text};">
       <span style="display:inline-block;width:8px;height:8px;border-radius:50%;
         background:${s.dot};"></span>
-      ${s.label}
+      ${label}
     </span>
   `;
 };
 
-// ── Shared issue title block
 const issueTitleBlock = (title) => `
   <div style="background:#f8fafc;border-left:3px solid #16a34a;
     padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;">
@@ -110,7 +120,6 @@ const issueTitleBlock = (title) => `
   </div>
 `;
 
-// ── CTA button
 const ctaButton = (href, label) => `
   <a href="${href}" target="_blank"
     style="display:inline-block;background:#16a34a;color:#ffffff;
@@ -120,9 +129,9 @@ const ctaButton = (href, label) => `
   </a>
 `;
 
-// ── Template 1: Verified
+
 export const verifiedTemplate = (issue, frontendUrl) => ({
-  subject: `✓ Your report has been verified — DigitalSewa`,
+  subject: `Your report has been verified — DigitalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       Your report has been verified
@@ -134,32 +143,12 @@ export const verifiedTemplate = (issue, frontendUrl) => ({
       assigned to the relevant department shortly.
     </p>
     ${issueTitleBlock(issue.title)}
-    <table cellpadding="0" cellspacing="0" style="margin:16px 0;">
-      <tr>
-        <td style="padding-right:24px;">
-          <p style="margin:0;font-size:12px;color:#94a3b8;font-weight:600;
-            text-transform:uppercase;letter-spacing:0.5px;">Category</p>
-          <p style="margin:4px 0 0;font-size:14px;color:#0f172a;font-weight:500;">
-            ${issue.category}
-          </p>
-        </td>
-        <td>
-          <p style="margin:0;font-size:12px;color:#94a3b8;font-weight:600;
-            text-transform:uppercase;letter-spacing:0.5px;">Priority</p>
-          <p style="margin:4px 0 0;font-size:14px;color:#0f172a;font-weight:500;
-            text-transform:capitalize;">
-            ${issue.priority}
-          </p>
-        </td>
-      </tr>
-    </table>
     ${ctaButton(`${frontendUrl}/issues/${issue._id}`, "View your report")}
   `),
 });
 
-// ── Template 2: In Progress
 export const inProgressTemplate = (issue, frontendUrl) => ({
-  subject: `🔧 Work has started on your report — DigitalSewa`,
+  subject: `Work has started on your report — DigitalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       Work has started on your issue
@@ -171,19 +160,12 @@ export const inProgressTemplate = (issue, frontendUrl) => ({
       the issue is resolved.
     </p>
     ${issueTitleBlock(issue.title)}
-    <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;
-      padding:12px 16px;margin:16px 0;">
-      <p style="margin:0;font-size:13px;color:#b45309;font-weight:500;">
-        ⏱ Estimated resolution time may vary by issue type and crew availability.
-      </p>
-    </div>
     ${ctaButton(`${frontendUrl}/issues/${issue._id}`, "Track progress")}
   `),
 });
 
-// ── Template 3: Resolved
 export const resolvedTemplate = (issue, frontendUrl) => ({
-  subject: `🎉 Your issue has been resolved — DigitalSewa`,
+  subject: `Your issue has been resolved — DigitalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       Your issue has been resolved!
@@ -191,21 +173,13 @@ export const resolvedTemplate = (issue, frontendUrl) => ({
     ${statusBadge("resolved")}
     <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.7;">
       Great news — the municipality has fixed the issue you reported.
-      Thank you for helping make Nepal better. Your report made a real difference.
+      Thank you for helping make Nepal better.
     </p>
     ${issueTitleBlock(issue.title)}
-    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;
-      padding:12px 16px;margin:16px 0;">
-      <p style="margin:0;font-size:13px;color:#15803d;font-weight:500;">
-        If the issue has not actually been resolved, you can reopen it
-        from your report page.
-      </p>
-    </div>
     ${ctaButton(`${frontendUrl}/issues/${issue._id}`, "View resolved report")}
   `),
 });
 
-// ── Template 4: Rejected
 export const rejectedTemplate = (issue, rejectionReason, frontendUrl) => ({
   subject: `Your report could not be actioned — DigitalSewa`,
   html: baseWrapper(`
@@ -215,9 +189,6 @@ export const rejectedTemplate = (issue, rejectionReason, frontendUrl) => ({
     ${statusBadge("rejected")}
     <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.7;">
       After review, the ward officer was unable to action your report.
-      This may be because it is a duplicate of an existing report,
-      outside the municipality's jurisdiction, or does not meet the
-      reporting criteria.
     </p>
     ${issueTitleBlock(issue.title)}
     ${
@@ -226,27 +197,18 @@ export const rejectedTemplate = (issue, rejectionReason, frontendUrl) => ({
       <div style="background:#fef2f2;border-left:3px solid #ef4444;
         border-radius:0 8px 8px 0;padding:12px 16px;margin:16px 0;">
         <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#b91c1c;
-          text-transform:uppercase;letter-spacing:0.5px;">
-          Reason provided
-        </p>
-        <p style="margin:0;font-size:14px;color:#7f1d1d;line-height:1.6;">
-          ${rejectionReason}
-        </p>
+          text-transform:uppercase;letter-spacing:0.5px;">Reason provided</p>
+        <p style="margin:0;font-size:14px;color:#7f1d1d;line-height:1.6;">${rejectionReason}</p>
       </div>
     `
         : ""
     }
-    <p style="font-size:13px;color:#94a3b8;margin:16px 0 8px;">
-      You are welcome to submit a new report if the issue persists
-      or if you have additional information.
-    </p>
     ${ctaButton(`${frontendUrl}/issues/new`, "Submit a new report")}
   `),
 });
 
-// - Template 5: New assignment for field worker
 export const assignedTemplate = (issue, frontendUrl) => ({
-  subject: `📋 New assignment: ${issue.title.slice(0, 60)} — SmartNepal`,
+  subject: `New assignment: ${issue.title.slice(0, 60)} — DigitalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       You have a new assignment
@@ -289,4 +251,140 @@ export const assignedTemplate = (issue, frontendUrl) => ({
     </table>
     ${ctaButton(`${frontendUrl}/field/assignments/${issue._id}`, "View assignment")}
   `),
+});
+
+export const verifiedTemplateNe = (issue, frontendUrl) => ({
+  subject: `तपाईंको रिपोर्ट प्रमाणित भयो — डिजिटल सेवा`,
+  html: baseWrapper(
+    `
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      तपाईंको रिपोर्ट प्रमाणित भयो
+    </p>
+    ${statusBadge("verified", "ne")}
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.9;">
+      राम्रो खबर! वडा अधिकारीले तपाईंको रिपोर्ट समीक्षा र प्रमाणित गर्नुभएको छ।
+      यो नगरपालिकाको कार्य सूचीमा थपिएको छ र चाँडै सम्बन्धित विभागलाई तोकिनेछ।
+    </p>
+    ${issueTitleBlock(issue.title)}
+    ${ctaButton(`${frontendUrl}/issues/${issue._id}`, "आफ्नो रिपोर्ट हेर्नुहोस्")}
+  `,
+    "ne",
+  ),
+});
+
+export const inProgressTemplateNe = (issue, frontendUrl) => ({
+  subject: `तपाईंको रिपोर्टमा काम सुरु भयो — डिजिटल सेवा`,
+  html: baseWrapper(
+    `
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      तपाईंको समस्यामा काम सुरु भयो
+    </p>
+    ${statusBadge("in-progress", "ne")}
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.9;">
+      सम्बन्धित विभागले तपाईंको रिपोर्ट स्वीकार गरेको छ र समाधान गर्न टोली खटाइएको छ।
+      समस्या समाधान भएपछि तपाईंलाई सूचित गरिनेछ।
+    </p>
+    ${issueTitleBlock(issue.title)}
+    ${ctaButton(`${frontendUrl}/issues/${issue._id}`, "प्रगति हेर्नुहोस्")}
+  `,
+    "ne",
+  ),
+});
+
+export const resolvedTemplateNe = (issue, frontendUrl) => ({
+  subject: `तपाईंको समस्या समाधान भयो — डिजिटल सेवा`,
+  html: baseWrapper(
+    `
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      तपाईंको समस्या समाधान भयो!
+    </p>
+    ${statusBadge("resolved", "ne")}
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.9;">
+      राम्रो खबर — नगरपालिकाले तपाईंले रिपोर्ट गर्नुभएको समस्या समाधान गरेको छ।
+      नेपाललाई राम्रो बनाउन मद्दत गर्नुभएकोमा धन्यवाद।
+    </p>
+    ${issueTitleBlock(issue.title)}
+    ${ctaButton(`${frontendUrl}/issues/${issue._id}`, "समाधान भएको रिपोर्ट हेर्नुहोस्")}
+  `,
+    "ne",
+  ),
+});
+
+export const rejectedTemplateNe = (issue, rejectionReason, frontendUrl) => ({
+  subject: `तपाईंको रिपोर्टमा कारबाही गर्न सकिएन — डिजिटल सेवा`,
+  html: baseWrapper(
+    `
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      तपाईंको रिपोर्टमा कारबाही गर्न सकिएन
+    </p>
+    ${statusBadge("rejected", "ne")}
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.9;">
+      समीक्षा पछि, वडा अधिकारीले तपाईंको रिपोर्टमा कारबाही गर्न सक्नुभएन।
+    </p>
+    ${issueTitleBlock(issue.title)}
+    ${
+      rejectionReason
+        ? `
+      <div style="background:#fef2f2;border-left:3px solid #ef4444;
+        border-radius:0 8px 8px 0;padding:12px 16px;margin:16px 0;">
+        <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#b91c1c;
+          text-transform:uppercase;letter-spacing:0.5px;">दिइएको कारण</p>
+        <p style="margin:0;font-size:14px;color:#7f1d1d;line-height:1.9;">${rejectionReason}</p>
+      </div>
+    `
+        : ""
+    }
+    ${ctaButton(`${frontendUrl}/issues/new`, "नयाँ रिपोर्ट पेश गर्नुहोस्")}
+  `,
+    "ne",
+  ),
+});
+
+export const assignedTemplateNe = (issue, frontendUrl) => ({
+  subject: `नयाँ जिम्मेवारी: ${issue.title.slice(0, 60)} — डिजिटल सेवा`,
+  html: baseWrapper(
+    `
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      तपाईंलाई नयाँ जिम्मेवारी दिइएको छ
+    </p>
+    <span style="display:inline-flex;align-items:center;gap:6px;padding:5px 14px;
+      border-radius:20px;font-size:13px;font-weight:600;
+      background:#fffbeb;color:#b45309;">
+      <span style="display:inline-block;width:8px;height:8px;border-radius:50%;
+        background:#f59e0b;"></span>
+      नयाँ जिम्मेवारी
+    </span>
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.9;">
+      नगरपालिकाका प्रशासकले तलको नागरिक समस्या तपाईंलाई तोक्नुभएको छ।
+      कृपया विवरण हेरेर काम सुरु गर्नुहोस्।
+    </p>
+    <div style="background:#f8fafc;border-left:3px solid #f59e0b;
+      padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0;">
+      <p style="margin:0;font-size:14px;font-weight:600;color:#0f172a;line-height:1.5;">
+        ${issue.title}
+      </p>
+    </div>
+    <table cellpadding="0" cellspacing="0" style="margin:16px 0;">
+      <tr>
+        <td style="padding-right:24px;">
+          <p style="margin:0;font-size:12px;color:#94a3b8;font-weight:600;
+            text-transform:uppercase;letter-spacing:0.5px;">श्रेणी</p>
+          <p style="margin:4px 0 0;font-size:14px;color:#0f172a;font-weight:500;">
+            ${issue.category}
+          </p>
+        </td>
+        <td>
+          <p style="margin:0;font-size:12px;color:#94a3b8;font-weight:600;
+            text-transform:uppercase;letter-spacing:0.5px;">प्राथमिकता</p>
+          <p style="margin:4px 0 0;font-size:14px;color:#0f172a;font-weight:500;
+            text-transform:capitalize;">
+            ${issue.priority}
+          </p>
+        </td>
+      </tr>
+    </table>
+    ${ctaButton(`${frontendUrl}/field/assignments/${issue._id}`, "जिम्मेवारी हेर्नुहोस्")}
+  `,
+    "ne",
+  ),
 });

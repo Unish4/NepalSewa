@@ -16,7 +16,9 @@ const formatUser = (user) => ({
   city: user.city,
   avatar: user.avatar,
   emailNotifications: user.emailNotifications,
+  preferredLanguage: user.preferredLanguage,
 });
+
 export const register = async (req, res, next) => {
   try {
     const errors = validationResult(req);
@@ -153,13 +155,17 @@ export const updatePreferences = async (req, res, next) => {
       });
     }
 
-    const { emailNotifications } = req.body;
+    const { emailNotifications, preferredLanguage } = req.body;
 
-    const user = await User.findByIdAndUpdate(
-      req.user._id,
-      { emailNotifications },
-      { new: true },
-    ).select("-password");
+    const updates = {};
+    if (emailNotifications !== undefined)
+      updates.emailNotifications = emailNotifications;
+    if (preferredLanguage !== undefined)
+      updates.preferredLanguage = preferredLanguage;
+
+    const user = await User.findByIdAndUpdate(req.user._id, updates, {
+      new: true,
+    }).select("-password");
 
     res.status(200).json({ success: true, user: formatUser(user) });
   } catch (error) {

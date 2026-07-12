@@ -16,6 +16,8 @@ import { IssueCardSkeleton } from "../../components/ui/SkeletonLoader.jsx";
 import { useDebounce } from "../../hooks/useDebounce.js";
 import { CATEGORIES } from "../../constants/issue.js";
 import { fetchBoundaryOptions } from "../../services/issueService.js";
+import { useTranslation } from "react-i18next";
+import { useIssueLabels } from "../../hooks/useIssueLabels.js";
 
 const STATUS_CHIPS = [
   { label: "All", value: "" },
@@ -25,9 +27,9 @@ const STATUS_CHIPS = [
 ];
 
 const SORT_OPTIONS = [
-  { value: "newest", label: "Sort: Newest" },
-  { value: "oldest", label: "Sort: Oldest" },
-  { value: "most-upvoted", label: "Sort: Most Upvoted" },
+  { value: "newest", labelKey: "list.sortNewest" },
+  { value: "oldest", labelKey: "list.sortOldest" },
+  { value: "most-upvoted", labelKey: "list.sortUpvoted" },
 ];
 
 const DEFAULT_FILTERS = {
@@ -60,6 +62,10 @@ export default function IssuesPage() {
   const [districts, setDistricts] = useState([]);
 
   const debouncedSearch = useDebounce(search, 400);
+
+  const { t } = useTranslation("issues");
+  const { t: tCommon } = useTranslation("common");
+  const { getCategoryLabel, getStatusLabel, getPriorityLabel } = useIssueLabels();
 
   // Load province/district options once on mount
   useEffect(() => {
@@ -136,7 +142,7 @@ export default function IssuesPage() {
                 setSearch(e.target.value);
                 setPage(1);
               }}
-              placeholder="Search issues, locations…"
+              placeholder={t("list.searchPlaceholder")}
               className="h-9 pl-9 pr-8 rounded-lg border border-[#e2e8f0] text-sm
                 placeholder:text-[#94a3b8] text-[#0f172a] outline-none
                 focus:border-[#16a34a] focus:ring-2 focus:ring-[#16a34a]/15
@@ -158,7 +164,7 @@ export default function IssuesPage() {
           </div>
 
           <div className="flex items-center gap-1.5">
-            {STATUS_CHIPS.map(({ label, value }) => (
+            {STATUS_CHIPS.map(({ value }) => (
               <button
                 key={value}
                 onClick={() => setFilter("status", value)}
@@ -169,7 +175,7 @@ export default function IssuesPage() {
                       : "bg-white text-[#475569] border-[#e2e8f0] hover:border-[#cbd5e1]"
                   }`}
               >
-                {label}
+                {value ? getStatusLabel(value) : t("list.allCategories")}
               </button>
             ))}
           </div>
@@ -188,10 +194,10 @@ export default function IssuesPage() {
             onChange={(v) => setFilter("category", v)}
             active={!!filters.category}
           >
-            <option value="">All Categories</option>
+            <option value="">{t("list.allCategories")}</option>
             {CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {c}
+                {getCategoryLabel(c)}
               </option>
             ))}
           </FilterDropdown>
@@ -205,7 +211,7 @@ export default function IssuesPage() {
             }}
             active={!!filters.province}
           >
-            <option value="">All Provinces</option>
+            <option value="">{t("list.allProvinces")}</option>
             {provinces.map((p) => (
               <option key={p} value={p}>
                 {p}
@@ -219,7 +225,7 @@ export default function IssuesPage() {
             onChange={(v) => setFilter("district", v)}
             active={!!filters.district}
           >
-            <option value="">All Districts</option>
+            <option value="">{t("list.allDistricts")}</option>
             {/* Show all districts, or filter by selected province if we have the data */}
             {districts.map((d) => (
               <option key={d} value={d}>
@@ -234,11 +240,11 @@ export default function IssuesPage() {
             onChange={(v) => setFilter("priority", v)}
             active={!!filters.priority}
           >
-            <option value="">All Priorities</option>
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-            <option value="critical">Critical</option>
+            <option value="">{t("list.allPriorities")}</option>
+            <option value="low">{getPriorityLabel("low")}</option>
+            <option value="medium">{getPriorityLabel("medium")}</option>
+            <option value="high">{getPriorityLabel("high")}</option>
+            <option value="critical">{getPriorityLabel("critical")}</option>
           </FilterDropdown>
 
           {/* Sort */}
@@ -249,7 +255,7 @@ export default function IssuesPage() {
           >
             {SORT_OPTIONS.map((s) => (
               <option key={s.value} value={s.value}>
-                {s.label}
+                {t(s.labelKey)}
               </option>
             ))}
           </FilterDropdown>
@@ -266,7 +272,7 @@ export default function IssuesPage() {
                 className="h-8 px-3 text-xs font-medium text-[#64748b]
                   hover:text-[#0f172a] underline underline-offset-2 transition-colors"
               >
-                Clear all filters
+                {tCommon("actions.clearAll")}
               </button>
             </>
           )}
@@ -279,11 +285,11 @@ export default function IssuesPage() {
         <div className="flex items-start justify-between mb-6">
           <div>
             <h1 className="text-[28px] font-bold text-[#0f172a] tracking-tight">
-              Community Issues
+              {t("list.title")}
             </h1>
             {pagination && !hasFilters && (
               <p className="text-sm text-[#64748b] mt-1">
-                {pagination.total} issues reported
+                {pagination.total} {pagination.total === 1 ? t("card.issue", { defaultValue: "issue" }) : t("list.showingCount", { count: pagination.total }).toLowerCase().replace(/^\d+\s*/, "")}
               </p>
             )}
             {(filters.province || filters.district) && (
@@ -306,23 +312,24 @@ export default function IssuesPage() {
                 )}
                 {pagination && (
                   <span className="text-xs text-[#94a3b8]">
-                    · {pagination.total} issue
-                    {pagination.total !== 1 ? "s" : ""}
+                    · {pagination.total} {pagination.total === 1 ? t("card.issue", { defaultValue: "issue" }) : t("list.showingCount", { count: pagination.total }).toLowerCase().replace(/^\d+\s*/, "")}
                   </span>
                 )}
               </div>
             )}
           </div>
-          {isAuthenticated && user?.role !== "admin" && user?.role !== "field_worker" && (
-            <Link
-              to="/issues/new"
-              className="inline-flex items-center gap-2 h-10 px-5 rounded-lg
+          {isAuthenticated &&
+            user?.role !== "admin" &&
+            user?.role !== "field_worker" && (
+              <Link
+                to="/issues/new"
+                className="inline-flex items-center gap-2 h-10 px-5 rounded-lg
                 bg-[#16a34a] hover:bg-[#15803d] text-white font-semibold text-sm
                 transition-colors shadow-sm shrink-0"
-            >
-              <Plus size={15} /> Report an Issue
-            </Link>
-          )}
+              >
+                <Plus size={15} /> {tCommon("nav.reportIssue")}
+              </Link>
+            )}
         </div>
 
         {/* Error */}
@@ -357,38 +364,38 @@ export default function IssuesPage() {
               {hasFilters ? (
                 <>
                   <h3 className="text-lg font-semibold text-[#0f172a] mb-2">
-                    No results found
+                    {t("list.noResultsTitle")}
                   </h3>
                   <p className="text-sm text-[#94a3b8] max-w-xs mb-6 leading-relaxed">
-                    No issues match your current filters.
-                    {(filters.province || filters.district) &&
-                      " Try a different province or district."}
+                    {t("list.noResultsDesc")}
                   </p>
                   <button
                     onClick={clearAll}
                     className="h-10 px-6 rounded-lg bg-[#16a34a] hover:bg-[#15803d]
                       text-white text-sm font-semibold transition-colors"
                   >
-                    Clear filters
+                    {tCommon("actions.clearAll")}
                   </button>
                 </>
               ) : (
                 <>
                   <h3 className="text-lg font-semibold text-[#0f172a] mb-2">
-                    No issues reported yet
+                    {t("list.emptyTitle")}
                   </h3>
                   <p className="text-sm text-[#94a3b8] max-w-xs mb-6">
-                    Be the first to report a civic issue.
+                    {t("list.emptyDesc")}
                   </p>
-                  {isAuthenticated && user?.role !== "admin" && user?.role !== "field_worker" && (
-                    <Link
-                      to="/issues/new"
-                      className="h-10 px-6 rounded-lg bg-[#16a34a] hover:bg-[#15803d]
+                  {isAuthenticated &&
+                    user?.role !== "admin" &&
+                    user?.role !== "field_worker" && (
+                      <Link
+                        to="/issues/new"
+                        className="h-10 px-6 rounded-lg bg-[#16a34a] hover:bg-[#15803d]
                         text-white text-sm font-semibold transition-colors"
-                    >
-                      Report an issue
-                    </Link>
-                  )}
+                      >
+                        {t("list.reportFirst")}
+                      </Link>
+                    )}
                 </>
               )}
             </div>

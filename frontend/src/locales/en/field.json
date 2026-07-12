@@ -1,0 +1,12 @@
+{
+  "dashboard": {
+    "title": "My Assignments",
+    "subtitle": "Issues dispatched to you by the municipality"
+  },
+  "tabs": {
+    "all": "All",
+    "pending": "Pending",
+    "inProgress": "In Progress",
+    "resolved": "Resolved"
+  }
+}
