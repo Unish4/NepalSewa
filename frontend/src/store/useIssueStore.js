@@ -8,6 +8,8 @@ import {
   deleteIssueRequest,
   upvoteIssueRequest,
 } from "../services/issueService.js";
+import { enqueueIssue } from "../lib/offlineQueue.js";
+import useOfflineStore from "./useOfflineStore.js";
 
 // Helper: applies a new upvoterIds array to a single issue object.
 // Used by the optimistic update and rollback paths below.
@@ -67,9 +69,25 @@ const useIssueStore = create((set, get) => ({
   createIssue: async (issueData) => {
     set({ isLoading: true });
     try {
+      if (!navigator.onLine) {
+        const record = await enqueueIssue(issueData);
+        await useOfflineStore.getState().refreshPendingCount();
+        return { isOffline: true, issue: record.payload };
+      }
       const res = await createIssueRequest(issueData);
       set((state) => ({ issues: [res.issue, ...state.issues] }));
       return res;
+    } catch (error) {
+      if (!navigator.onLine || error.message === "Network Error" || !error.response) {
+        try {
+          const record = await enqueueIssue(issueData);
+          await useOfflineStore.getState().refreshPendingCount();
+          return { isOffline: true, issue: record.payload };
+        } catch (queueErr) {
+          console.error("Failed to queue offline:", queueErr);
+        }
+      }
+      throw error;
     } finally {
       set({ isLoading: false });
     }

@@ -144,7 +144,7 @@ export default function AdminDashboardPage() {
           Dashboard
         </h1>
         <p className="text-sm font-medium text-[#64748b] mt-1.5">
-          Overview of civic reports and engagement across DigitalSewa
+          Overview of civic reports and engagement across NepalSewa
         </p>
       </div>
 

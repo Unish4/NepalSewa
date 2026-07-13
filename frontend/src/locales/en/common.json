@@ -1,6 +1,6 @@
 {
   "app": {
-    "name": "DigitalSewa"
+    "name": "NepalSewa"
   },
   "nav": {
     "issues": "Issues",
@@ -31,7 +31,7 @@
   "home": {
     "headline1": "Your voice shapes a",
     "headline2": "better",
-    "subtitle": "Report broken roads, garbage, water issues, and more in seconds. DigitalSewa connects citizens directly to their municipalities.",
+    "subtitle": "Report broken roads, garbage, water issues, and more in seconds. NepalSewa connects citizens directly to their municipalities.",
     "ctaReport": "Report an Issue",
     "ctaView": "View Issues Near You",
     "trust1": "Free for citizens",
@@ -41,7 +41,7 @@
     "statsMunicipalities": "Municipalities",
     "statsResolution": "Resolution rate",
     "statsResponse": "Avg. response time",
-    "howItWorksTitle": "How DigitalSewa works",
+    "howItWorksTitle": "How NepalSewa works",
     "howItWorksSubtitle": "Three simple steps to get your issue resolved.",
     "step1Title": "Take a photo & report",
     "step1Desc": "Photograph the issue and submit a report with a description in seconds.",
@@ -50,7 +50,7 @@
     "step3Title": "Municipality gets notified",
     "step3Desc": "The relevant municipality receives, triages, and dispatches a crew.",
     "categoriesTitle": "What can you report?",
-    "categoriesSubtitle": "DigitalSewa handles every kind of civic issue.",
+    "categoriesSubtitle": "NepalSewa handles every kind of civic issue.",
     "footerTagline": "Connecting citizens to their municipalities for a better Nepal.",
     "footerPlatform": "Platform",
     "footerGovernment": "Government",
@@ -62,7 +62,7 @@
     "accountInfo": "Account Information",
     "notificationPrefs": "Notification Preferences",
     "languagePrefs": "Language Preference",
-    "languageDesc": "Choose the language DigitalSewa uses for the interface and email notifications.",
+    "languageDesc": "Choose the language NepalSewa uses for the interface and email notifications.",
     "emailNotifTitle": "Email notifications",
     "emailNotifDesc": "Receive email updates when your report is verified, in progress, resolved, or rejected.",
     "emailNotifOn": "You will receive status update emails",

@@ -1,4 +1,4 @@
-# DigitalSewa 📍
+# NepalSewa 📍
 
 A civic issue reporting platform for Nepal that empowers citizens to report local problems directly to their municipality. Built with modern web technologies to bridge the gap between citizens and local government.
 
@@ -52,7 +52,7 @@ A civic issue reporting platform for Nepal that empowers citizens to report loca
 ## 📁 Project Structure
 
 ```
-DigitalSewa/
+NepalSewa/
 ├── backend/
 │   ├── src/
 │   │   ├── config/          # Configuration files (env, db)
@@ -99,7 +99,7 @@ DigitalSewa/
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd DigitalSewa
+   cd NepalSewa
    ```
 
 2. **Install dependencies**
@@ -117,7 +117,7 @@ DigitalSewa/
 
    Create a `.env` file in the `backend` directory:
    ```env
-   MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/DigitalSewa_db
+   MONGODB_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/NepalSewa_db
    PORT=3000
    NODE_ENV=development
    CLIENT_URL=http://localhost:5173
@@ -255,7 +255,7 @@ This project is licensed under the ISC License.
 
 ## 👥 Authors
 
-- DigitalSewa Development Team
+- NepalSewa Development Team
 
 ## 🙏 Acknowledgments
 

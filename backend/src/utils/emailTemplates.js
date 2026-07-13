@@ -1,13 +1,13 @@
 const baseWrapper = (content, lang = "en") => {
   const footerText =
     lang === "ne"
-      ? `तपाईंले यो सूचना पाउनुभएको छ किनभने तपाईंले डिजिटल सेवा मार्फत नागरिक समस्या रिपोर्ट गर्नुभएको थियो।
-       <br/>© ${new Date().getFullYear()} डिजिटल सेवा · नेपालका ७ प्रदेशका नागरिकहरूलाई सेवा दिँदै।`
+      ? `तपाईंले यो सूचना पाउनुभएको छ किनभने तपाईंले नेपाल सेवा मार्फत नागरिक समस्या रिपोर्ट गर्नुभएको थियो।
+       <br/>© ${new Date().getFullYear()} नेपाल सेवा · नेपालका ७ प्रदेशका नागरिकहरूलाई सेवा दिँदै।`
       : `You are receiving this notification because you reported a civic issue
-       via DigitalSewa.
-       <br/>© ${new Date().getFullYear()} DigitalSewa · Serving citizens across 7 provinces of Nepal.`;
+       via NepalSewa.
+       <br/>© ${new Date().getFullYear()} NepalSewa · Serving citizens across 7 provinces of Nepal.`;
 
-  const brandName = lang === "ne" ? "डिजिटल सेवा" : "DigitalSewa";
+  const brandName = lang === "ne" ? "नेपाल सेवा" : "NepalSewa";
 
   return `
 <!DOCTYPE html>
@@ -131,7 +131,7 @@ const ctaButton = (href, label) => `
 
 
 export const verifiedTemplate = (issue, frontendUrl) => ({
-  subject: `Your report has been verified — DigitalSewa`,
+  subject: `Your report has been verified — NepalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       Your report has been verified
@@ -148,7 +148,7 @@ export const verifiedTemplate = (issue, frontendUrl) => ({
 });
 
 export const inProgressTemplate = (issue, frontendUrl) => ({
-  subject: `Work has started on your report — DigitalSewa`,
+  subject: `Work has started on your report — NepalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       Work has started on your issue
@@ -165,7 +165,7 @@ export const inProgressTemplate = (issue, frontendUrl) => ({
 });
 
 export const resolvedTemplate = (issue, frontendUrl) => ({
-  subject: `Your issue has been resolved — DigitalSewa`,
+  subject: `Your issue has been resolved — NepalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       Your issue has been resolved!
@@ -181,7 +181,7 @@ export const resolvedTemplate = (issue, frontendUrl) => ({
 });
 
 export const rejectedTemplate = (issue, rejectionReason, frontendUrl) => ({
-  subject: `Your report could not be actioned — DigitalSewa`,
+  subject: `Your report could not be actioned — NepalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       Your report could not be actioned
@@ -208,7 +208,7 @@ export const rejectedTemplate = (issue, rejectionReason, frontendUrl) => ({
 });
 
 export const assignedTemplate = (issue, frontendUrl) => ({
-  subject: `New assignment: ${issue.title.slice(0, 60)} — DigitalSewa`,
+  subject: `New assignment: ${issue.title.slice(0, 60)} — NepalSewa`,
   html: baseWrapper(`
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
       You have a new assignment
@@ -254,7 +254,7 @@ export const assignedTemplate = (issue, frontendUrl) => ({
 });
 
 export const verifiedTemplateNe = (issue, frontendUrl) => ({
-  subject: `तपाईंको रिपोर्ट प्रमाणित भयो — डिजिटल सेवा`,
+  subject: `तपाईंको रिपोर्ट प्रमाणित भयो — नेपाल सेवा`,
   html: baseWrapper(
     `
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
@@ -273,7 +273,7 @@ export const verifiedTemplateNe = (issue, frontendUrl) => ({
 });
 
 export const inProgressTemplateNe = (issue, frontendUrl) => ({
-  subject: `तपाईंको रिपोर्टमा काम सुरु भयो — डिजिटल सेवा`,
+  subject: `तपाईंको रिपोर्टमा काम सुरु भयो — नेपाल सेवा`,
   html: baseWrapper(
     `
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
@@ -292,7 +292,7 @@ export const inProgressTemplateNe = (issue, frontendUrl) => ({
 });
 
 export const resolvedTemplateNe = (issue, frontendUrl) => ({
-  subject: `तपाईंको समस्या समाधान भयो — डिजिटल सेवा`,
+  subject: `तपाईंको समस्या समाधान भयो — नेपाल सेवा`,
   html: baseWrapper(
     `
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
@@ -311,7 +311,7 @@ export const resolvedTemplateNe = (issue, frontendUrl) => ({
 });
 
 export const rejectedTemplateNe = (issue, rejectionReason, frontendUrl) => ({
-  subject: `तपाईंको रिपोर्टमा कारबाही गर्न सकिएन — डिजिटल सेवा`,
+  subject: `तपाईंको रिपोर्टमा कारबाही गर्न सकिएन — नेपाल सेवा`,
   html: baseWrapper(
     `
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
@@ -341,7 +341,7 @@ export const rejectedTemplateNe = (issue, rejectionReason, frontendUrl) => ({
 });
 
 export const assignedTemplateNe = (issue, frontendUrl) => ({
-  subject: `नयाँ जिम्मेवारी: ${issue.title.slice(0, 60)} — डिजिटल सेवा`,
+  subject: `नयाँ जिम्मेवारी: ${issue.title.slice(0, 60)} — नेपाल सेवा`,
   html: baseWrapper(
     `
     <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">

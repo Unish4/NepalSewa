@@ -254,7 +254,7 @@ export default function ProfilePage() {
             text-xs font-semibold px-3 py-1.5 rounded-full border border-[#bbf7d0] mb-5"
           >
             <User size={11} />
-            {i18n.language === "ne" ? "तपाईंको डिजिटल सेवा खाता" : "Your DigitalSewa account"}
+            {i18n.language === "ne" ? "तपाईंको नेपाल सेवा खाता" : "Your NepalSewa account"}
           </div>
 
           <h1
@@ -367,7 +367,7 @@ export default function ProfilePage() {
                     {t("profile.accountInfo")}
                   </h3>
                   <p className="text-sm text-[#94a3b8] mt-0.5">
-                    {i18n.language === "ne" ? "डिजिटल सेवामा तपाईंको दर्ता गरिएको विवरण" : "Your registered details on DigitalSewa"}
+                    {i18n.language === "ne" ? "नेपाल सेवामा तपाईंको दर्ता गरिएको विवरण" : "Your registered details on NepalSewa"}
                   </p>
                 </div>
                 {!isEditing && (
@@ -573,7 +573,7 @@ export default function ProfilePage() {
                   {t("profile.notificationPrefs")}
                 </h3>
                 <p className="text-sm text-[#94a3b8] mt-0.5">
-                  {t("profile.notificationPrefsDesc", { defaultValue: "Choose how DigitalSewa keeps you updated" })}
+                  {t("profile.notificationPrefsDesc", { defaultValue: "Choose how NepalSewa keeps you updated" })}
                 </p>
               </div>
 

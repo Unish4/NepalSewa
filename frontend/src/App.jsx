@@ -28,6 +28,10 @@ import FieldDashboardPage from "./pages/field/FieldDashboardPage";
 import FieldIssueDetailPage from "./pages/field/FieldIssueDetailPage";
 
 import useAuthStore from "./store/useAuthStore";
+import OfflineBanner from "./components/pwa/OfflineBanner.jsx";
+import InstallPrompt from "./components/pwa/InstallPrompt.jsx";
+import UpdatePrompt from "./components/pwa/UpdatePrompt.jsx";
+import SyncManager from "./components/pwa/SyncManager.jsx";
 
 // Public only route - redirects authenticated users away from auth pages
 const PublicOnlyRoute = ({ children }) => {
@@ -52,13 +56,18 @@ const FieldWorkerRoute = ({ children }) => {
 const CitizenRoute = ({ children }) => {
   const { isAuthenticated, user } = useAuthStore();
   if (!isAuthenticated) return <Navigate to="/login" replace />;
-  if (user?.role === "admin" || user?.role === "field_worker") return <Navigate to="/" replace />;
+  if (user?.role === "admin" || user?.role === "field_worker")
+    return <Navigate to="/" replace />;
   return children;
 };
 
 function App() {
   return (
     <>
+      <SyncManager />
+      <InstallPrompt />
+      <UpdatePrompt />
+      <OfflineBanner />
       <Toaster
         position="top-right"
         toastOptions={{

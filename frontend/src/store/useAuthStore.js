@@ -90,7 +90,7 @@ const useAuthStore = create(
       },
     }),
     {
-      name: "DigitalSewa-auth",
+      name: "NepalSewa-auth",
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,

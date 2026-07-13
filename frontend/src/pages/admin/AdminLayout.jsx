@@ -33,7 +33,7 @@ const SidebarContent = ({ user, onLogout, onLinkClick }) => (
           <img src="/icon.png" alt="" className="w-full h-full rounded-lg" />
         </div>
         <span className="font-extrabold text-white text-[16px] tracking-tight shrink-0">
-          Digital<span className="text-emerald-400">Sewa</span>
+          Nepal<span className="text-emerald-400">Sewa</span>
         </span>
       </Link>
       <span

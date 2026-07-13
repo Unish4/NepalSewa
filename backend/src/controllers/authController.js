@@ -212,7 +212,7 @@ export const uploadAvatar = async (req, res, next) => {
 
     const result = await uploadToCloudinary(
       req.file.buffer,
-      "DigitalSewa/avatars",
+      "NepalSewa/avatars",
       [
         { width: 400, height: 400, crop: "fill", gravity: "face" },
         { quality: "auto:good" },

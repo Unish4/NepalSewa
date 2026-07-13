@@ -27,6 +27,23 @@ export const createIssue = async (req, res, next) => {
     checkValidation(req, res);
     const { title, description, category, priority, address, lat, lng } =
       req.body;
+    const idempotencyKey = req.body.idempotencyKey?.trim();
+
+    if (idempotencyKey) {
+      const existingIssue = await Issue.findOne({ idempotencyKey }).populate(
+        "author",
+        "name email",
+      );
+
+      if (existingIssue) {
+        return res.status(200).json({
+          success: true,
+          duplicate: true,
+          issue: existingIssue,
+        });
+      }
+    }
+
     const parsedLat = lat ? parseFloat(lat) : undefined;
     const parsedLng = lng ? parseFloat(lng) : undefined;
 
@@ -34,7 +51,7 @@ export const createIssue = async (req, res, next) => {
     if (req.files?.length > 0) {
       const results = await Promise.all(
         req.files.map((f) =>
-          uploadToCloudinary(f.buffer, "DigitalSewa/issues"),
+          uploadToCloudinary(f.buffer, "NepalSewa/issues"),
         ),
       );
       imageUrls = results.map((r) => r.secure_url);
@@ -47,6 +64,7 @@ export const createIssue = async (req, res, next) => {
       priority: priority || "low",
       location: { address: address || "", lat: parsedLat, lng: parsedLng },
       images: imageUrls,
+      idempotencyKey: idempotencyKey || undefined,
       author: req.user._id,
     });
 
@@ -87,6 +105,19 @@ export const createIssue = async (req, res, next) => {
     await issue.populate("author", "name email");
     res.status(201).json({ success: true, issue });
   } catch (error) {
+    if (error.code === 11000 && req.body.idempotencyKey) {
+      const duplicateIssue = await Issue.findOne({
+        idempotencyKey: req.body.idempotencyKey,
+      }).populate("author", "name email");
+
+      if (duplicateIssue) {
+        return res.status(200).json({
+          success: true,
+          duplicate: true,
+          issue: duplicateIssue,
+        });
+      }
+    }
     next(error);
   }
 };

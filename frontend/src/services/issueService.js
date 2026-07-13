@@ -26,6 +26,9 @@ export const createIssueRequest = async (issueData) => {
   formData.append("description", issueData.description);
   formData.append("category", issueData.category);
   formData.append("priority", issueData.priority || "low");
+  if (issueData.idempotencyKey) {
+    formData.append("idempotencyKey", String(issueData.idempotencyKey));
+  }
   if (issueData.address) formData.append("address", issueData.address);
   if (issueData.lat != null) formData.append("lat", String(issueData.lat));
   if (issueData.lng != null) formData.append("lng", String(issueData.lng));

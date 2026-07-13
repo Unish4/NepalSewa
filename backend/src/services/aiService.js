@@ -30,7 +30,7 @@ const withTimeout = (promise) =>
 // ── 1. Categorization
 const buildCategorizationPrompt = (title, description) =>
   `
-You are an AI assistant for DigitalSewa, a civic issue reporting platform in Nepal.
+You are an AI assistant for NepalSewa, a civic issue reporting platform in Nepal.
 Analyze this citizen report and classify it.
 
 Title: "${title}"
@@ -94,7 +94,7 @@ export const categorizeIssue = async (title, description) => {
 // ── 2. Title generation
 const buildTitlePrompt = (description, category) =>
   `
-You are an AI assistant for DigitalSewa, a civic issue reporting platform in Nepal.
+You are an AI assistant for NepalSewa, a civic issue reporting platform in Nepal.
 A citizen has described a problem but not provided a clear title.
 
 Description: "${description}"
@@ -137,7 +137,7 @@ export const generateTitle = async (description, category) => {
 
 const buildDuplicatePrompt = (newIssue, candidates) =>
   `
-You are analyzing civic issue reports for DigitalSewa to detect potential duplicates.
+You are analyzing civic issue reports for NepalSewa to detect potential duplicates.
 
 NEW REPORT:
 Title: "${newIssue.title}"

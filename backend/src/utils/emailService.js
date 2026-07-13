@@ -60,7 +60,7 @@ const sendEmail = async ({ to, subject, html }) => {
   }
 
   await transporter.sendMail({
-    from: `"DigitalSewa" <${ENV.GMAIL_USER}>`,
+    from: `"NepalSewa" <${ENV.GMAIL_USER}>`,
     to,
     subject,
     html,
@@ -91,6 +91,7 @@ export const sendStatusChangeEmail = async (
   if (!issue.author?.email) return; // No email address on record
   if (!issue.author?.emailNotifications) return; // User opted out of emails
 
+  const lang = issue.author?.preferredLanguage || "en";
   const frontendUrl = ENV.CLIENT_URL || "http://localhost:5173";
 
   // Select the template based on the new status.

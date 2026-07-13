@@ -160,7 +160,7 @@ export const updateAssignmentStatus = async (req, res, next) => {
       const results = await Promise.all(
         req.files.map(async (file) => {
           const buffer = await readFile(file.path);
-          return uploadToCloudinary(buffer, "DigitalSewa/resolutions");
+          return uploadToCloudinary(buffer, "NepalSewa/resolutions");
         }),
       );
       issue.resolutionProof.push(...results.map((r) => r.secure_url));
