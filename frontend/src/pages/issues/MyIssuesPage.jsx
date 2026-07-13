@@ -14,6 +14,7 @@ import { STATUS_CONFIG, PRIORITY_CONFIG } from "../../constants/issue.js";
 import { timeAgo } from "../../utils/timeAgo.js";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import { IssueRowSkeleton } from "../../components/ui/SkeletonLoader.jsx";
+import PendingSyncList from "../../components/issues/PendingSyncList.jsx";
 
 const MyIssuesPage = () => {
   const navigate = useNavigate();
@@ -71,6 +72,9 @@ const MyIssuesPage = () => {
           New Report
         </Link>
       </div>
+
+      {/* Phase 21 — offline-queued drafts, shown above real issues */}
+      <PendingSyncList />
 
       {/* Error state */}
       {error && (

@@ -53,6 +53,12 @@ const issueSchema = new mongoose.Schema(
       ward: { type: String, default: "" },
     },
     images: [{ type: String, default: [] }],
+    idempotencyKey: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
     upvoterIds: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -90,6 +96,7 @@ issueSchema.index({ status: 1, category: 1 });
 issueSchema.index({ author: 1 });
 issueSchema.index({ assignedTo: 1 });
 issueSchema.index({ createdAt: -1 });
+issueSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true });
 
 const Issue = mongoose.model("Issue", issueSchema);
 export default Issue;

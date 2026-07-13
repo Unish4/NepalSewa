@@ -31,6 +31,15 @@ const Navbar = () => {
 
   const navLinks = [
     { to: "/issues", label: t("issues"), Icon: FileText },
+    ...(!isAdmin && !isFieldWorker && isAuthenticated
+      ? [
+          {
+            to: "/issues/me",
+            label: t("myReports"),
+            Icon: FileText,
+          },
+        ]
+      : []),
     ...(isAdmin
       ? [
           {
@@ -66,11 +75,11 @@ const Navbar = () => {
         <span className="font-bold text-[#0f172a] text-[15px] tracking-tight">
           {i18n.language === "ne" ? (
             <>
-              डिजिटल<span className="text-[#16a34a]"> सेवा</span>
+              नेपाल<span className="text-[#16a34a]"> सेवा</span>
             </>
           ) : (
             <>
-              Digital<span className="text-[#16a34a]">Sewa</span>
+              Nepal<span className="text-[#16a34a]">Sewa</span>
             </>
           )}
         </span>

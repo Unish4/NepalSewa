@@ -78,8 +78,8 @@ export default function RegisterPage() {
       await registerAction(payload);
       toast.success(
         i18n.language === "ne"
-          ? "खाता सिर्जना भयो! डिजिटल सेवामा स्वागत छ।"
-          : "Account created! Welcome to DigitalSewa.",
+          ? "खाता सिर्जना भयो! नेपाल सेवामा स्वागत छ।"
+          : "Account created! Welcome to NepalSewa.",
       );
       navigate("/");
     } catch (error) {
@@ -129,11 +129,11 @@ export default function RegisterPage() {
           <span className="font-bold text-white text-[15px] tracking-tight">
             {i18n.language === "ne" ? (
               <>
-                डिजिटल<span style={{ color: "#86efac" }}> सेवा</span>
+                नेपाल<span style={{ color: "#86efac" }}> सेवा</span>
               </>
             ) : (
               <>
-                Digital<span style={{ color: "#86efac" }}>Sewa</span>
+                Nepal<span style={{ color: "#86efac" }}>Sewa</span>
               </>
             )}
           </span>
@@ -198,11 +198,11 @@ export default function RegisterPage() {
             <span className="font-bold text-[#0f172a] text-sm">
               {i18n.language === "ne" ? (
                 <>
-                  डिजिटल<span className="text-[#16a34a]"> सेवा</span>
+                  नेपाल<span className="text-[#16a34a]"> सेवा</span>
                 </>
               ) : (
                 <>
-                  Digital<span className="text-[#16a34a]">Sewa</span>
+                  Nepal<span className="text-[#16a34a]">Sewa</span>
                 </>
               )}
             </span>

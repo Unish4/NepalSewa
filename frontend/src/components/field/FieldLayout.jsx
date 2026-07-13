@@ -43,7 +43,7 @@ const FieldLayout = () => {
               />
             </div>
             <span className="font-bold text-[#0f172a] text-[15px] tracking-tight">
-              Digital<span className="text-[#16a34a]">Sewa</span>
+              Nepal<span className="text-[#16a34a]">Sewa</span>
             </span>
           </Link>
           <span
