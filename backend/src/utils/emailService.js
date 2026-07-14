@@ -7,6 +7,10 @@ import {
   resolvedTemplate,
   rejectedTemplate,
   assignedTemplate,
+  passwordResetTemplate,
+  verificationTemplate,
+  passwordResetTemplateNe,
+  verificationTemplateNe,
   assignedTemplateNe,
   inProgressTemplateNe,
   rejectedTemplateNe,
@@ -132,7 +136,9 @@ export const sendStatusChangeEmail = async (
   }
 
   await sendEmail({ to: issue.author.email, ...emailData });
-  console.log(`Email sent to ${issue.author.email} — status: ${newStatus} [${lang}]`);
+  console.log(
+    `Email sent to ${issue.author.email} — status: ${newStatus} [${lang}]`,
+  );
 };
 
 export const sendAssignmentEmail = async (issueId, fieldWorkerId) => {
@@ -142,7 +148,6 @@ export const sendAssignmentEmail = async (issueId, fieldWorkerId) => {
       .select("name email emailNotifications preferredLanguage")
       .lean(),
   ]);
-  
 
   if (!issue) return; // Issue deleted mid-flight
   if (!fieldWorker?.email) return; // No email on record — skip silently
@@ -158,4 +163,31 @@ export const sendAssignmentEmail = async (issueId, fieldWorkerId) => {
   console.log(
     `Assignment email sent to ${fieldWorker.email} for issue ${issueId}`,
   );
+};
+
+export const sendPasswordResetEmail = async (user, rawToken) => {
+  if (!user?.email) return;
+  const frontendUrl = ENV.CLIENT_URL || "http://localhost:5173";
+  const resetUrl = `${frontendUrl}/reset-password/${rawToken}`;
+  const lang = user.preferredLanguage === "ne" ? "ne" : "en";
+  const emailData =
+    lang === "ne"
+      ? passwordResetTemplateNe(user, resetUrl)
+      : passwordResetTemplate(user, resetUrl);
+  await sendEmail({ to: user.email, ...emailData });
+  logger.info({ userId: user._id }, "Password reset email sent");
+};
+
+// ── Email verification email
+export const sendVerificationEmail = async (user, rawToken) => {
+  if (!user?.email) return;
+  const frontendUrl = ENV.CLIENT_URL || "http://localhost:5173";
+  const verifyUrl = `${frontendUrl}/verify-email/${rawToken}`;
+  const lang = user.preferredLanguage === "ne" ? "ne" : "en";
+  const emailData =
+    lang === "ne"
+      ? verificationTemplateNe(user, verifyUrl)
+      : verificationTemplate(user, verifyUrl);
+  await sendEmail({ to: user.email, ...emailData });
+  logger.info({ userId: user._id }, "Verification email sent");
 };

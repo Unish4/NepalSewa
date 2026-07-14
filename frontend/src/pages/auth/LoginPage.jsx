@@ -71,7 +71,6 @@ export default function LoginPage() {
     formState: { errors },
   } = useForm();
 
-
   // Track API-level error for the banner
   const [apiError, setApiError] = useState("");
   const handleSubmitWithError = async (data) => {
@@ -81,10 +80,7 @@ export default function LoginPage() {
       toast.success(t("login.welcomeBack") + "!");
       navigate("/");
     } catch (error) {
-      setApiError(
-        error.response?.data?.message ||
-          t("login.errorInvalid"),
-      );
+      setApiError(error.response?.data?.message || t("login.errorInvalid"));
     }
   };
 
@@ -122,18 +118,20 @@ export default function LoginPage() {
             &ldquo;
           </div>
           <div className="mb-6">
-            {[t("login.quote1"), t("login.quote2"), t("login.quote3")].map((word, i) => (
-              <div
-                key={word}
-                className="font-bold leading-[1.1] tracking-tight"
-                style={{
-                  fontSize: "clamp(28px,3vw,42px)",
-                  color: i === 2 ? "#86efac" : "white",
-                }}
-              >
-                {word}
-              </div>
-            ))}
+            {[t("login.quote1"), t("login.quote2"), t("login.quote3")].map(
+              (word, i) => (
+                <div
+                  key={word}
+                  className="font-bold leading-[1.1] tracking-tight"
+                  style={{
+                    fontSize: "clamp(28px,3vw,42px)",
+                    color: i === 2 ? "#86efac" : "white",
+                  }}
+                >
+                  {word}
+                </div>
+              ),
+            )}
           </div>
           <p className="text-white/70 text-base leading-relaxed max-w-70">
             {t("login.quoteSubtitle")}
@@ -292,12 +290,12 @@ export default function LoginPage() {
 
               {/* Forgot password */}
               <div className="flex items-center justify-end mb-5">
-                <button
-                  type="button"
+                <Link
+                  to="/forgot-password"
                   className="text-sm text-[#16a34a] hover:text-[#15803d] font-medium transition-colors"
                 >
                   {t("login.forgotPassword")}
-                </button>
+                </Link>
               </div>
 
               <button
@@ -309,7 +307,8 @@ export default function LoginPage() {
               >
                 {isLoading ? (
                   <>
-                    <Loader2 size={16} className="animate-spin" /> {t("login.signingIn")}
+                    <Loader2 size={16} className="animate-spin" />{" "}
+                    {t("login.signingIn")}
                   </>
                 ) : (
                   t("login.signInButton")

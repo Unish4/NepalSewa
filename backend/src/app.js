@@ -13,6 +13,9 @@ import cors from "cors";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import { shieldGuard } from "./middleware/arcjetMiddleware.js";
+import pinoHttp from "pino-http";
+import * as Sentry from "@sentry/node";
+import logger from "./config/logger.js";
 
 // ─── Routes
 import healthRoutes from "./routes/healthRoutes.js";
@@ -71,8 +74,19 @@ app.use(
   }),
 );
 
-// HTTP request logging — dev only
-if (ENV.NODE_ENV !== "production") app.use(morgan("dev"));
+// HTTP request logging
+if (ENV.NODE_ENV === "production") {
+  app.use(
+    pinoHttp({
+      logger,
+      autoLogging: {
+        ignore: (req) => req.url === "/api/health",
+      },
+    }),
+  );
+} else {
+  app.use(morgan("dev"));
+}
 
 // Allow cross-origin requests from the frontend (cookie-safe)
 app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
@@ -114,6 +128,9 @@ app.use("/api/issues", issueRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/field", fieldWorkerRoutes);
+
+
+Sentry.setupExpressErrorHandler(app); 
 
 // ─── Error middleware — must be last
 app.use(notFound);

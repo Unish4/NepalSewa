@@ -36,3 +36,25 @@ export const uploadAvatarRequest = async (file) => {
   const response = await api.post("/api/auth/avatar", formData);
   return response.data;
 };
+
+export const forgotPasswordRequest = async (email) => {
+  const response = await api.post("/api/auth/forgot-password", { email });
+  return response.data;
+};
+
+export const resetPasswordRequest = async (token, password) => {
+  const response = await api.post(`/api/auth/reset-password/${token}`, {
+    password,
+  });
+  return response.data;
+};
+
+export const verifyEmailRequest = async (token) => {
+  const response = await api.get(`/api/auth/verify-email/${token}`);
+  return response.data;
+};
+
+export const resendVerificationRequest = async () => {
+  const response = await api.post("/api/auth/resend-verification");
+  return response.data;
+};

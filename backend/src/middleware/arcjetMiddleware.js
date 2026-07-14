@@ -1,3 +1,5 @@
+import logger from "../config/logger.js"; // ← Phase 26
+
 export const arcjetGuard =
   (client, context = () => ({})) =>
   async (req, res, next) => {
@@ -36,7 +38,6 @@ export const arcjetGuard =
             message: "Your request was blocked for security reasons.",
           });
         }
-        // Fallback for any future Arcjet rule type not explicitly handled.
         return res
           .status(403)
           .json({ success: false, message: "Request denied." });
@@ -44,7 +45,7 @@ export const arcjetGuard =
 
       next();
     } catch (error) {
-      console.error(`Arcjet check failed, failing open: ${error.message}`);
+      logger.error({ err: error }, "Arcjet check failed, failing open");
       next();
     }
   };
@@ -61,7 +62,7 @@ export const shieldGuard = (client) => async (req, res, next) => {
     }
     next();
   } catch (error) {
-    console.error(`Arcjet shield check failed, failing open: ${error.message}`);
+    logger.error({ err: error }, "Arcjet shield check failed, failing open");
     next();
   }
 };

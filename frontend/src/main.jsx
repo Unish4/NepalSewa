@@ -1,6 +1,7 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
+import * as Sentry from "@sentry/react";
 
 // Early capture of PWA install prompt
 window.addEventListener("beforeinstallprompt", (e) => {
@@ -11,6 +12,10 @@ window.addEventListener("beforeinstallprompt", (e) => {
 
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
+import ErrorFallback from "./components/ErrorFallback.jsx"; // ← Phase 26
+import { initSentry } from "./lib/sentry.js";
+
+initSentry(); 
 
 import "leaflet/dist/leaflet.css";
 
@@ -18,11 +23,12 @@ import "./lib/leafletSetup.js";
 
 import "./i18n/index.js";
 
-
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <Sentry.ErrorBoundary fallback={ErrorFallback} showDialog>
+      <BrowserRouter>
+        <App />
+      </BrowserRouter>
+    </Sentry.ErrorBoundary>
   </StrictMode>,
 );

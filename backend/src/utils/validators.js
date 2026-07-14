@@ -297,7 +297,7 @@ export const aiDuplicateValidator = [
     .withMessage("Invalid longitude"),
 ];
 
-// ─── Phase 18 — Field worker validators ───────────────────────────────────
+// ───  Field worker validators 
 const FIELD_DEPARTMENTS = [
   "Road Maintenance",
   "Water Supply",
@@ -364,4 +364,23 @@ export const fieldStatusUpdateValidator = [
     .withMessage("Please explain why this issue cannot be resolved")
     .isLength({ max: 500 })
     .withMessage("Reason cannot exceed 500 characters"),
+];
+
+// ──  password reset validators 
+export const forgotPasswordValidator = [
+  body("email")
+    .trim()
+    .notEmpty()
+    .withMessage("Email is required")
+    .isEmail()
+    .withMessage("Please provide a valid email address")
+    .normalizeEmail(),
+];
+
+export const resetPasswordValidator = [
+  body("password")
+    .notEmpty()
+    .withMessage("Password is required")
+    .isLength({ min: 6, max: 72 })
+    .withMessage("Password must be between 6 and 72 characters"),
 ];

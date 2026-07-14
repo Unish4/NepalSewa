@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -14,6 +15,9 @@ import IssueDetailPage from "./pages/issues/IssueDetailPage";
 import MyIssuesPage from "./pages/issues/MyIssuesPage";
 import EditIssuePage from "./pages/issues/EditIssuePage";
 import ProfilePage from "./pages/ProfilePage";
+import ForgotPasswordPage from "./pages/auth/ForgotPasswordPage"; // ← Phase 25
+import ResetPasswordPage from "./pages/auth/ResetPasswordPage"; // ← Phase 25
+import VerifyEmailPage from "./pages/auth/VerifyEmailPage";
 
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
@@ -63,6 +67,20 @@ const CitizenRoute = ({ children }) => {
 };
 
 function App() {
+  const { checkAuth, isCheckingAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isCheckingAuth) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-slate-950">
+        <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       <SyncManager />
@@ -99,6 +117,26 @@ function App() {
             </PublicOnlyRoute>
           }
         />
+
+        <Route
+          path="forgot-password"
+          element={
+            <PublicOnlyRoute>
+              <ForgotPasswordPage />
+            </PublicOnlyRoute>
+          }
+        />
+
+        <Route
+          path="reset-password/:token"
+          element={
+            <PublicOnlyRoute>
+              <ResetPasswordPage />
+            </PublicOnlyRoute>
+          }
+        />
+
+        <Route path="verify-email/:token" element={<VerifyEmailPage />} />
 
         <Route
           path="/admin"

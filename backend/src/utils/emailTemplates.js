@@ -129,7 +129,6 @@ const ctaButton = (href, label) => `
   </a>
 `;
 
-
 export const verifiedTemplate = (issue, frontendUrl) => ({
   subject: `Your report has been verified — NepalSewa`,
   html: baseWrapper(`
@@ -252,6 +251,39 @@ export const assignedTemplate = (issue, frontendUrl) => ({
     ${ctaButton(`${frontendUrl}/field/assignments/${issue._id}`, "View assignment")}
   `),
 });
+
+export const verificationTemplate = (user, verifyUrl) => ({
+  subject: `Verify your SmartNepal email address`,
+  html: baseWrapper(`
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      Welcome to SmartNepal, ${user.name}
+    </p>
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.7;">
+      Please verify your email address so your municipality knows your reports
+      come from a real, reachable account. This link expires in 24 hours.
+    </p>
+    ${ctaButton(verifyUrl, "Verify Email")}
+  `),
+});
+
+export const passwordResetTemplate = (user, resetUrl) => ({
+  subject: `Reset your SmartNepal password`,
+  html: baseWrapper(`
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      Reset your password
+    </p>
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.7;">
+      Hi ${user.name}, we received a request to reset your SmartNepal password.
+      Click the button below to choose a new one. This link expires in 1 hour.
+    </p>
+    ${ctaButton(resetUrl, "Reset Password")}
+    <p style="font-size:12px;color:#94a3b8;margin-top:20px;">
+      If you didn't request this, you can safely ignore this email — your password will not change.
+    </p>
+  `),
+});
+
+// Nepalese templates
 
 export const verifiedTemplateNe = (issue, frontendUrl) => ({
   subject: `तपाईंको रिपोर्ट प्रमाणित भयो — नेपाल सेवा`,
@@ -384,6 +416,44 @@ export const assignedTemplateNe = (issue, frontendUrl) => ({
       </tr>
     </table>
     ${ctaButton(`${frontendUrl}/field/assignments/${issue._id}`, "जिम्मेवारी हेर्नुहोस्")}
+  `,
+    "ne",
+  ),
+});
+
+export const verificationTemplateNe = (user, verifyUrl) => ({
+  subject: `आफ्नो स्मार्टनेपाल इमेल प्रमाणित गर्नुहोस्`,
+  html: baseWrapper(
+    `
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      स्मार्टनेपालमा स्वागत छ, ${user.name}
+    </p>
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.9;">
+      कृपया आफ्नो इमेल ठेगाना प्रमाणित गर्नुहोस् ताकि तपाईंको नगरपालिकालाई थाहा होस्
+      कि तपाईंको रिपोर्ट एक वास्तविक, सम्पर्क गर्न सकिने खाताबाट आएको हो।
+      यो लिङ्क २४ घण्टामा समाप्त हुनेछ।
+    </p>
+    ${ctaButton(verifyUrl, "इमेल प्रमाणित गर्नुहोस्")}
+  `,
+    "ne",
+  ),
+});
+
+export const passwordResetTemplateNe = (user, resetUrl) => ({
+  subject: `आफ्नो स्मार्टनेपाल पासवर्ड रिसेट गर्नुहोस्`,
+  html: baseWrapper(
+    `
+    <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#0f172a;">
+      आफ्नो पासवर्ड रिसेट गर्नुहोस्
+    </p>
+    <p style="margin:16px 0;font-size:14px;color:#475569;line-height:1.9;">
+      नमस्ते ${user.name}, हामीले तपाईंको स्मार्टनेपाल पासवर्ड रिसेट गर्ने अनुरोध प्राप्त गर्यौं।
+      नयाँ पासवर्ड छान्न तलको बटन थिच्नुहोस्। यो लिङ्क १ घण्टामा समाप्त हुनेछ।
+    </p>
+    ${ctaButton(resetUrl, "पासवर्ड रिसेट गर्नुहोस्")}
+    <p style="font-size:12px;color:#94a3b8;margin-top:20px;">
+      यदि तपाईंले यो अनुरोध गर्नुभएको छैन भने, यो इमेललाई बेवास्ता गर्न सक्नुहुन्छ।
+    </p>
   `,
     "ne",
   ),

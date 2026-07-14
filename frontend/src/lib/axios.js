@@ -23,7 +23,10 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      window.location.href = "/login";
+      const isAuthRoute = error.config?.url?.includes("/api/auth/");
+      if (!isAuthRoute) {
+        window.location.href = "/login";
+      }
       return Promise.reject(error);
     }
 

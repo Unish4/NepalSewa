@@ -6,7 +6,6 @@ import arcjet, {
 } from "@arcjet/node";
 import ENV from "./env.js";
 
-
 const isConfigured = !!ENV.ARCJET_KEY && ENV.NODE_ENV === "production";
 
 // Base client with Shield (for global middleware)
@@ -49,6 +48,12 @@ export const issueCreateArcjet = isConfigured
   ? routeBase
       .withRule(slidingWindow({ mode: "LIVE", interval: "1h", max: 20 }))
       .withRule(detectBot({ mode: "LIVE", allow: [] }))
+  : null;
+
+export const passwordResetArcjet = isConfigured
+  ? baseClient.withRule(
+      slidingWindow({ mode: "LIVE", interval: "15m", max: 5 }),
+    )
   : null;
 
 export default baseClient;
