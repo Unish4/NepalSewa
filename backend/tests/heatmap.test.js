@@ -1,7 +1,8 @@
-import { describe, it, expect } from "vitest";import mongoose from "mongoose";
+import { describe, it, expect } from "vitest";
+import request from "supertest";
+import mongoose from "mongoose";
 import app from "../src/app.js";
 import Issue from "../src/models/Issue.js";
-import mongoose from "mongoose";
 
 const registerAndLogin = async (email) => {
   const res = await request(app).post("/api/auth/register").send({ name: "Test", email, password: "password123" });
@@ -61,7 +62,7 @@ describe("Heatmap data", () => {
     const cookie = await registerAndLogin("citizen4@test.com");
     const issueId = await createIssueAt(cookie, 27.7, 85.3);
 
-    const fakeUpvoterIds = Array.from({ length: 15 }, () => new mongoose.Types.ObjectId());import request from "supertest";
+    const fakeUpvoterIds = Array.from({ length: 15 }, () => new mongoose.Types.ObjectId());
     await Issue.findByIdAndUpdate(issueId, { upvoterIds: fakeUpvoterIds });
 
     const res = await request(app).get("/api/issues/heatmap");
