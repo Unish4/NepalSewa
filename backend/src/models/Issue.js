@@ -114,5 +114,5 @@ issueSchema.index({ createdAt: -1 });
 issueSchema.index({ idempotencyKey: 1 }, { unique: true, sparse: true });
 issueSchema.index({ slaDeadline: 1, status: 1 });
 
-const Issue = mongoose.model("Issue", issueSchema);
+const Issue = mongoose.models.Issue || mongoose.model("Issue", issueSchema);
 export default Issue;

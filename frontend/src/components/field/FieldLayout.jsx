@@ -1,6 +1,7 @@
 import { Link, NavLink, Outlet, useNavigate } from "react-router-dom";
 import { LogOut, ClipboardList, User as UserIcon } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore.js";
+import NotificationBell from "../layout/NotificationBell.jsx";
 
 const BOTTOM_TABS = [
   { to: "/field", label: "Assignments", Icon: ClipboardList, end: true },
@@ -53,14 +54,17 @@ const FieldLayout = () => {
             Field
           </span>
         </div>
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-1.5 text-xs font-semibold text-[#94a3b8]
-            hover:text-red-500 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-red-50 cursor-pointer"
-        >
-          <LogOut size={13} />
-          <span>Sign out</span>
-        </button>
+        <div className="flex items-center gap-3">
+          <NotificationBell />
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-1.5 text-xs font-semibold text-[#94a3b8]
+              hover:text-red-500 transition-colors px-2.5 py-1.5 rounded-lg hover:bg-red-50 cursor-pointer"
+          >
+            <LogOut size={13} />
+            <span>Sign out</span>
+          </button>
+        </div>
       </div>
 
       {/* Page content  */}

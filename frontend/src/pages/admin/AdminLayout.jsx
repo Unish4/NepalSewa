@@ -15,6 +15,7 @@ import {
   ScrollText,
 } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore.js";
+import NotificationBell from "../../components/layout/NotificationBell.jsx";
 
 // SidebarContent is extracted so it renders identically in both the
 // fixed desktop sidebar and the mobile slide-in drawer.
@@ -208,35 +209,46 @@ const AdminLayout = () => {
 
       {/* ── Main area ── */}
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Mobile top bar */}
-        <div
-          className="md:hidden h-14 flex items-center justify-between px-4
-            border-b shrink-0 bg-white"
+        {/* Top Header Bar */}
+        <header
+          className="h-14 bg-white border-b flex items-center justify-between px-4 md:px-6 shrink-0"
           style={{ borderColor: "#e2e8f0" }}
         >
-          <button
-            onClick={() => setMobileOpen(true)}
-            className="text-[#475569] hover:text-[#0f172a] transition-colors"
-          >
-            <Menu size={20} />
-          </button>
-          <Link
-            to="/"
-            className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
-          >
-            <div className="w-8 h-8 flex items-center justify-center">
-              <img
-                src="/icon.png"
-                alt=""
-                className="w-full h-full rounded-lg"
-              />
-            </div>
-            <span className="font-bold text-sm text-[#0f172a]">
-              Admin Panel
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setMobileOpen(true)}
+              className="md:hidden text-[#475569] hover:text-[#0f172a] transition-colors"
+            >
+              <Menu size={20} />
+            </button>
+            
+            {/* Desktop Title */}
+            <span className="hidden md:inline text-xs font-semibold text-[#64748b] tracking-wider uppercase">
+              Admin Workspace
             </span>
-          </Link>
-          <div className="w-6" />
-        </div>
+
+            {/* Mobile Logo/Title */}
+            <Link
+              to="/"
+              className="md:hidden flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer"
+            >
+              <div className="w-6 h-6 flex items-center justify-center">
+                <img
+                  src="/icon.png"
+                  alt=""
+                  className="w-full h-full rounded-lg"
+                />
+              </div>
+              <span className="font-bold text-sm text-[#0f172a]">
+                Admin Panel
+              </span>
+            </Link>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <NotificationBell />
+          </div>
+        </header>
 
         {/* Page content — Outlet renders child pages here */}
         <main className="flex-1 overflow-y-auto p-5 md:p-7">

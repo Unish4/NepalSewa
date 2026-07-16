@@ -42,5 +42,5 @@ auditLogSchema.index({
 });
 auditLogSchema.index({ targetType: 1, targetId: 1 });
 
-const AuditLog = mongoose.model("AuditLog", auditLogSchema);
+const AuditLog = mongoose.models.AuditLog || mongoose.model("AuditLog", auditLogSchema);
 export default AuditLog;

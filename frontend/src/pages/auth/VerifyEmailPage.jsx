@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { MapPin, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { CheckCircle, XCircle, Loader2 } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore.js";
 
 export default function VerifyEmailPage() {
@@ -28,7 +28,9 @@ export default function VerifyEmailPage() {
         if (isCurrent) {
           setStatus("error");
           if (!error.response) {
-            setMessage("Network error. Please check your connection and try again.");
+            setMessage(
+              "Network error. Please check your connection and try again.",
+            );
           } else {
             setMessage(
               error.response.data?.message ||
@@ -47,11 +49,11 @@ export default function VerifyEmailPage() {
     <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center p-6">
       <div className="w-full max-w-100 bg-white rounded-2xl shadow-xl p-8 text-center">
         <div className="flex items-center justify-center gap-2 mb-6">
-          <div className="w-8 h-8 rounded-lg bg-[#16a34a] flex items-center justify-center">
-            <MapPin size={15} className="text-white" />
+          <div className="w-8 h-8 flex items-center justify-center">
+            <img src="/icon.png" alt="" className="w-full h-full rounded-lg" />
           </div>
           <span className="font-bold text-[#0f172a] text-[15px]">
-            Smart<span className="text-[#16a34a]">Nepal</span>
+            Nepal<span className="text-[#16a34a]">Sewa</span>
           </span>
         </div>
 

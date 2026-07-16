@@ -298,8 +298,12 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-start justify-between gap-8">
             <div>
               <div className="flex items-center gap-2 mb-3">
-                <div className="w-8 h-8 rounded-lg bg-[#16a34a] flex items-center justify-center">
-                  <MapPin size={14} className="text-white" />
+                <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                  <img
+                    src="/icon.png"
+                    alt=""
+                    className="w-full h-full object-contain"
+                  />{" "}
                 </div>
                 <span className="font-bold text-white text-[15px] flex items-center gap-1.5">
                   <span>NepalSewa</span>

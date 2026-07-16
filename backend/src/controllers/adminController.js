@@ -7,8 +7,12 @@ import {
   sendStatusChangeEmail,
 } from "../utils/emailService.js";
 import { runEscalationCheck } from "../services/escalationService.js";
-import { buildIssueMatch } from "../utils/issueQueryBuilder.js"; // ← Phase 29, add to imports
+import { buildIssueMatch } from "../utils/issueQueryBuilder.js";
 import { logAdminAction } from "../utils/auditLogger.js";
+import {
+  notifyStatusChange,
+  notifyAssignment,
+} from "../services/notificationService.js";
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -251,6 +255,12 @@ export const updateIssueStatus = async (req, res, next) => {
             `Email notification failed for issue ${issue._id} (${status}): ${err.message}`,
           ),
       );
+
+      notifyStatusChange(issue.author._id, issue, status).catch((err) =>
+        console.error(
+          `Notification failed for issue ${issue._id}: ${err.message}`,
+        ),
+      );
     }
 
     res.status(200).json({ success: true, issue });
@@ -491,9 +501,19 @@ export const assignIssue = async (req, res, next) => {
       console.error(`Assignment email failed: ${err.message}`),
     );
 
+    notifyAssignment(fieldWorker._id, issue).catch((err) =>
+      console.error(`Assignment notification failed: ${err.message}`),
+    );
+
     if (issue.status !== previousStatus) {
       sendStatusChangeEmail(issue._id, issue.status, null).catch((err) =>
         console.error(`Status email failed: ${err.message}`),
+      );
+
+      notifyStatusChange(issue.author._id, issue, issue.status).catch((err) =>
+        console.error(
+          `Notification failed for issue ${issue._id}: ${err.message}`,
+        ),
       );
     }
 

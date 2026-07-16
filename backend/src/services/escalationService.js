@@ -2,6 +2,7 @@ import Issue from "../models/Issue.js";
 import User from "../models/User.js";
 import logger from "../config/logger.js";
 import { sendEscalationEmail } from "../utils/emailService.js";
+import { notifyEscalation } from "./notificationService.js";
 
 const findResponsibleAdmins = async (issue) => {
   const { province, district } = issue.location || {};
@@ -42,7 +43,11 @@ export const runEscalationCheck = async () => {
     try {
       // 1. Atomically claim only if the issue is still un-escalated.
       const claimedIssue = await Issue.findOneAndUpdate(
-        { _id: issue._id, escalated: false },
+        {
+          _id: issue._id,
+          escalated: false,
+          escalationState: { $ne: "processing" },
+        },
         { $set: { escalationState: "processing" } },
         { returnDocument: "after" },
       );
@@ -73,18 +78,26 @@ export const runEscalationCheck = async () => {
       const deliveryErrors = [];
       await Promise.all(
         admins.map((admin) =>
-          sendEscalationEmail(admin, claimedIssue).catch((err) => {
-            deliveryErrors.push({
-              adminEmail: admin.email,
-              error: err.message || String(err),
-              occurredAt: new Date(),
-            });
-            logger.error(
-              { err, adminEmail: admin.email, issueId: claimedIssue._id },
-              "Escalation email failed",
-            );
-          })
-        )
+          Promise.all([
+            sendEscalationEmail(admin, claimedIssue).catch((err) => {
+              deliveryErrors.push({
+                adminEmail: admin.email,
+                error: err.message || String(err),
+                occurredAt: new Date(),
+              });
+              logger.error(
+                { err, adminEmail: admin.email, issueId: claimedIssue._id },
+                "Escalation email failed",
+              );
+            }),
+            notifyEscalation(admin._id, claimedIssue).catch((err) => {
+              logger.error(
+                { err, adminId: admin._id, issueId: claimedIssue._id },
+                "Escalation notification failed",
+              );
+            }),
+          ]),
+        ),
       );
 
       // 4. Verify delivery success: require success for ALL intended recipients
@@ -104,7 +117,10 @@ export const runEscalationCheck = async () => {
         });
       }
     } catch (err) {
-      logger.error({ err, issueId: issue._id }, "Failed to process escalation check");
+      logger.error(
+        { err, issueId: issue._id },
+        "Failed to process escalation check",
+      );
       try {
         await Issue.findByIdAndUpdate(issue._id, {
           escalationState: "failed",
@@ -117,7 +133,10 @@ export const runEscalationCheck = async () => {
           },
         });
       } catch (saveErr) {
-        logger.error({ err: saveErr, issueId: issue._id }, "Failed to recover escalationState to failed");
+        logger.error(
+          { err: saveErr, issueId: issue._id },
+          "Failed to recover escalationState to failed",
+        );
       }
     }
   }

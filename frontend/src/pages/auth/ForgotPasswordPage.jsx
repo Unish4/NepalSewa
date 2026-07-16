@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import { MapPin, Loader2, CheckCircle, ArrowLeft } from "lucide-react";
+import { Loader2, CheckCircle, ArrowLeft } from "lucide-react";
 import useAuthStore from "../../store/useAuthStore.js";
 
 const INPUT_CLS =
@@ -36,11 +36,11 @@ export default function ForgotPasswordPage() {
         </Link>
 
         <div className="flex items-center gap-2 mb-2">
-          <div className="w-8 h-8 rounded-lg bg-[#16a34a] flex items-center justify-center">
-            <MapPin size={15} className="text-white" />
+          <div className="w-8 h-8 flex items-center justify-center">
+            <img src="/icon.png" alt="" className="w-full h-full rounded-lg" />
           </div>
           <span className="font-bold text-[#0f172a] text-[15px]">
-            Smart<span className="text-[#16a34a]">Nepal</span>
+            Nepal<span className="text-[#16a34a]">Sewa</span>
           </span>
         </div>
 

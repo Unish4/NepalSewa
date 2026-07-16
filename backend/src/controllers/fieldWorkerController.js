@@ -5,6 +5,7 @@ import Issue from "../models/Issue.js";
 import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 import { sendStatusChangeEmail } from "../utils/emailService.js";
 import { cleanupUploadedFiles } from "../middleware/upload.js";
+import { notifyStatusChange } from "../services/notificationService.js";
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -14,11 +15,7 @@ const checkValidation = (req, res) => {
   }
 };
 
-// ─── GET /api/field/assignments 
-// Returns issues assigned to the currently logged-in field worker.
-// Sorted by priority first (critical → low), then newest first within
-// each priority tier — a field worker should see their most urgent job
-// at the top of the list, not just their most recent one.
+// ─── GET /api/field/assignments
 export const getMyAssignments = async (req, res, next) => {
   try {
     const page = Math.max(1, parseInt(req.query.page) || 1);
@@ -83,10 +80,7 @@ export const getMyAssignments = async (req, res, next) => {
   }
 };
 
-// ─── GET /api/field/stats 
-// Quick counts for the dashboard header strip — total assigned, pending
-// start, in progress, resolved. One aggregation call instead of four
-// separate countDocuments queries.
+// ─── GET /api/field/stats
 export const getFieldStats = async (req, res, next) => {
   try {
     const counts = await Issue.aggregate([
@@ -116,10 +110,7 @@ export const getFieldStats = async (req, res, next) => {
   }
 };
 
-// ─── PATCH /api/field/assignments/:id/status 
-// The core dispatch action. A field worker moves their assigned issue
-// through in-progress → resolved (with photo proof) or → rejected
-// (with a reason, e.g. duplicate, inaccessible, false report).
+// ─── PATCH /api/field/assignments/:id/status
 export const updateAssignmentStatus = async (req, res, next) => {
   try {
     checkValidation(req, res);
@@ -133,9 +124,6 @@ export const updateAssignmentStatus = async (req, res, next) => {
         .json({ success: false, message: "Issue not found" });
     }
 
-    // Ownership check — a field worker can ONLY act on issues assigned to
-    // them specifically. This is enforced here, not just hidden in the UI,
-    // because the endpoint is reachable by any authenticated field worker.
     if (
       !issue.assignedTo ||
       issue.assignedTo.toString() !== req.user._id.toString()
@@ -146,9 +134,6 @@ export const updateAssignmentStatus = async (req, res, next) => {
       });
     }
 
-    // Resolving REQUIRES at least one proof photo. This is the entire
-    // point of a dispatch verification loop — a status change to
-    // "resolved" without evidence defeats the purpose of tracking field work.
     if (status === "resolved") {
       if (!req.files || req.files.length === 0) {
         return res.status(400).json({
@@ -181,6 +166,13 @@ export const updateAssignmentStatus = async (req, res, next) => {
           `Email notification failed for issue ${issue._id} (${status}): ${err.message}`,
         ),
     );
+
+    notifyStatusChange(issue.author._id, issue, status) // ← Phase 31
+      .catch((err) =>
+        console.error(
+          `In-app notification failed for issue ${issue._id} (${status}): ${err.message}`,
+        ),
+      );
 
     res.status(200).json({ success: true, issue });
   } catch (error) {

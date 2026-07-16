@@ -1,6 +1,5 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import {
-  Bell,
   Plus,
   FileText,
   ShieldCheck,
@@ -13,6 +12,7 @@ import useAuthStore from "../../store/useAuthStore";
 import { useTranslation } from "react-i18next";
 import LanguageSwitcher from "./LanguageSwitcher";
 import useOfflineStore from "../../store/useOfflineStore.js";
+import NotificationBell from "./NotificationBell.jsx";
 
 const Navbar = () => {
   const { t, i18n } = useTranslation("navbar");
@@ -150,17 +150,7 @@ const Navbar = () => {
             )}
 
             {/* Notification bell */}
-            <button
-              className="relative w-9 h-9 rounded-lg hover:bg-[#f8fafc]
-              text-[#475569] flex items-center justify-center transition-colors cursor-pointer"
-              title={t("notifications")}
-            >
-              <Bell size={17} />
-              <span
-                className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500
-                rounded-full border border-white"
-              />
-            </button>
+            <NotificationBell />
 
             {/* Profile avatar — links to /profile */}
             <Link

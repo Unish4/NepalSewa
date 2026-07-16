@@ -23,7 +23,7 @@ verificationTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 // Speeds up the exact lookup every reset/verify request performs.
 verificationTokenSchema.index({ tokenHash: 1, purpose: 1 });
 
-const VerificationToken = mongoose.model(
+const VerificationToken = mongoose.models.VerificationToken || mongoose.model(
   "VerificationToken",
   verificationTokenSchema,
 );

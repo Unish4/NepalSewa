@@ -57,5 +57,5 @@ boundarySchema.index({ geometry: "2dsphere" });
 //   Boundary.findOne({ type: "province", name: "Bagmati Province" })
 boundarySchema.index({ type: 1, name: 1 });
 
-const Boundary = mongoose.model("Boundary", boundarySchema);
+const Boundary = mongoose.models.Boundary || mongoose.model("Boundary", boundarySchema);
 export default Boundary;
