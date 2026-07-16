@@ -7,10 +7,8 @@ import {
 } from "../controllers/fieldWorkerController.js";
 import { protect, requireFieldWorker } from "../middleware/authMiddleware.js";
 import { fieldStatusUpdateValidator } from "../utils/validators.js";
-import {
-  cleanupUploadedFiles,
-  proofUpload,
-} from "../middleware/upload.js";
+import { cleanupUploadedFiles, proofUpload } from "../middleware/upload.js";
+import { requireTwoFactorEnabled } from "../middleware/twoFactor.js";
 
 const router = Router();
 
@@ -39,6 +37,8 @@ const uploadProofFiles = (req, res, next) => {
 };
 
 router.use(protect, requireFieldWorker);
+
+router.use(protect, requireFieldWorker, requireTwoFactorEnabled);
 
 router.get("/assignments", getMyAssignments);
 router.get("/stats", getFieldStats);

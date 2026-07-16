@@ -221,7 +221,7 @@ const AdminLayout = () => {
             >
               <Menu size={20} />
             </button>
-            
+
             {/* Desktop Title */}
             <span className="hidden md:inline text-xs font-semibold text-[#64748b] tracking-wider uppercase">
               Admin Workspace

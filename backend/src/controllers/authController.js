@@ -13,7 +13,21 @@ import {
 } from "../utils/emailService.js";
 import VerificationToken from "../models/VerificationToken.js";
 import { generateRawToken, hashToken } from "../utils/tokenUtils.js";
-import { awardBadgesIfEarned } from "../services/badgeService.js"; 
+import { awardBadgesIfEarned } from "../services/badgeService.js";
+import { TWO_FACTOR_REQUIRED_ROLES } from "../utils/twoFactorConfig.js";
+import {
+  generateSecret,
+  buildQrCodeDataUrl,
+  verifyToken,
+  generateBackupCodes,
+  hashBackupCode,
+  encryptSecret,
+  decryptSecret,
+} from "../services/twoFactorService.js";
+import {
+  generatePendingTwoFactorToken,
+  verifyPendingTwoFactorToken,
+} from "../utils/generateToken.js";
 
 const formatUser = (user) => ({
   _id: user._id,
@@ -32,6 +46,7 @@ const formatUser = (user) => ({
   department: user.department,
   stats: user.stats,
   badges: user.badges,
+  twoFactorEnabled: user.twoFactorEnabled,
 });
 
 const checkValidation = (req, res) => {
@@ -139,6 +154,16 @@ export const login = async (req, res, next) => {
         success: false,
         message: "Invalid email or password",
       });
+    }
+
+    if (
+      TWO_FACTOR_REQUIRED_ROLES.includes(user.role) &&
+      user.twoFactorEnabled
+    ) {
+      const pendingToken = generatePendingTwoFactorToken(user._id, user.tokenVersion);
+      return res
+        .status(200)
+        .json({ success: true, requiresTwoFactor: true, pendingToken });
     }
 
     const token = generateToken(user);
@@ -288,7 +313,7 @@ export const uploadAvatar = async (req, res, next) => {
 
 export const forgotPassword = async (req, res, next) => {
   try {
-    checkValidation(req, res);
+    if (!checkValidation(req, res)) return;
     const { email } = req.body;
 
     const user = await User.findOne({ email });
@@ -309,7 +334,10 @@ export const forgotPassword = async (req, res, next) => {
         expiresAt: new Date(Date.now() + PASSWORD_RESET_EXPIRY_MS),
       });
       sendPasswordResetEmail(user, rawToken).catch((err) =>
-        console.error("Password reset email failed", { err, email: user.email }),
+        console.error("Password reset email failed", {
+          err,
+          email: user.email,
+        }),
       );
     }
 
@@ -326,7 +354,7 @@ export const forgotPassword = async (req, res, next) => {
 // ── POST /api/auth/reset-password/:token
 export const resetPassword = async (req, res, next) => {
   try {
-    checkValidation(req, res);
+    if (!checkValidation(req, res)) return;
     const { token } = req.params;
     const { password } = req.body;
 
@@ -356,18 +384,16 @@ export const resetPassword = async (req, res, next) => {
     // itself is ever intercepted or forwarded.
     await tokenDoc.deleteOne();
 
-    res
-      .status(200)
-      .json({
-        success: true,
-        message: "Password reset successfully. You can now log in.",
-      });
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully. You can now log in.",
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// ── GET /api/auth/verify-email/:token 
+// ── GET /api/auth/verify-email/:token
 export const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
@@ -386,7 +412,9 @@ export const verifyEmail = async (req, res, next) => {
     }
 
     await User.findByIdAndUpdate(tokenDoc.user, { isEmailVerified: true });
-    awardBadgesIfEarned(tokenDoc.user).catch((err) => console.error(`Badge check failed: ${err.message}`));
+    awardBadgesIfEarned(tokenDoc.user).catch((err) =>
+      console.error(`Badge check failed: ${err.message}`),
+    );
     await tokenDoc.deleteOne();
 
     res
@@ -397,7 +425,7 @@ export const verifyEmail = async (req, res, next) => {
   }
 };
 
-// ── POST /api/auth/resend-verification 
+// ── POST /api/auth/resend-verification
 export const resendVerification = async (req, res, next) => {
   try {
     if (req.user.isEmailVerified) {
@@ -426,12 +454,232 @@ export const resendVerification = async (req, res, next) => {
       }),
     );
 
+    res.status(200).json({
+      success: true,
+      message: "Verification email sent. Please check your inbox.",
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── GET /api/auth/2fa/status 
+export const getTwoFactorStatus = async (req, res, next) => {
+  try {
+    res.status(200).json({
+      success: true,
+      enabled: req.user.twoFactorEnabled,
+      required: TWO_FACTOR_REQUIRED_ROLES.includes(req.user.role),
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── POST /api/auth/2fa/setup 
+export const setupTwoFactor = async (req, res, next) => {
+  try {
+    if (req.user.twoFactorEnabled) {
+      return res.status(400).json({
+        success: false,
+        message: "Two-factor authentication is already enabled",
+      });
+    }
+    const secret = generateSecret();
+    const qrCodeDataUrl = await buildQrCodeDataUrl(req.user.email, secret);
+    await User.findByIdAndUpdate(req.user._id, {
+      twoFactorPendingSecret: encryptSecret(secret),
+    });
+
     res
       .status(200)
-      .json({
-        success: true,
-        message: "Verification email sent. Please check your inbox.",
+      .json({ success: true, qrCodeDataUrl, manualEntryKey: secret });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── POST /api/auth/2fa/verify-setup 
+export const verifySetupTwoFactor = async (req, res, next) => {
+  try {
+    if (!checkValidation(req, res)) return;
+    const { code } = req.body;
+
+    const user = await User.findById(req.user._id).select(
+      "+twoFactorPendingSecret",
+    );
+    if (!user.twoFactorPendingSecret) {
+      return res.status(400).json({
+        success: false,
+        message: "No two-factor setup in progress. Start setup again.",
       });
+    }
+
+    const secret = decryptSecret(user.twoFactorPendingSecret);
+    if (!verifyToken(code, secret)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid verification code. Please try again.",
+      });
+    }
+
+    const backupCodes = generateBackupCodes();
+    user.twoFactorSecret = encryptSecret(secret);
+    user.twoFactorPendingSecret = undefined;
+    user.twoFactorEnabled = true;
+    user.twoFactorBackupCodes = backupCodes.map((c) => ({
+      codeHash: hashBackupCode(c),
+    }));
+    await user.save();
+
+    const token = generateToken(user, true);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === "production",
+      sameSite: ENV.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.status(200).json({
+      success: true,
+      message: "Two-factor authentication enabled",
+      backupCodes,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── POST /api/auth/2fa/disable 
+export const disableTwoFactor = async (req, res, next) => {
+  try {
+    if (!checkValidation(req, res)) return;
+    const { password, code } = req.body;
+
+    const user = await User.findById(req.user._id).select(
+      "+twoFactorSecret +twoFactorBackupCodes password",
+    );
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    if (!passwordMatch) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Incorrect password" });
+    }
+
+    const secret = user.twoFactorSecret
+      ? decryptSecret(user.twoFactorSecret)
+      : null;
+    const isValidTotp = secret && verifyToken(code, secret);
+    const isValidBackup =
+      !isValidTotp &&
+      user.twoFactorBackupCodes.some(
+        (bc) => !bc.usedAt && bc.codeHash === hashBackupCode(code),
+      );
+
+    if (!isValidTotp && !isValidBackup) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid verification code" });
+    }
+
+    user.twoFactorEnabled = false;
+    user.twoFactorSecret = undefined;
+    user.twoFactorBackupCodes = [];
+    await user.save();
+
+    const token = generateToken(user, false);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === "production",
+      sameSite: ENV.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res
+      .status(200)
+      .json({ success: true, message: "Two-factor authentication disabled" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// ── POST /api/auth/2fa/login-verify
+export const verifyTwoFactorLogin = async (req, res, next) => {
+  try {
+    if (!checkValidation(req, res)) return;
+    const { pendingToken, code } = req.body;
+
+    let payload;
+    try {
+      payload = await verifyPendingTwoFactorToken(pendingToken);
+    } catch {
+      return res.status(401).json({
+        success: false,
+        message: "This login attempt has expired. Please sign in again.",
+      });
+    }
+
+    const user = await User.findById(payload.userId).select(
+      "+twoFactorSecret +twoFactorBackupCodes",
+    );
+    if (!user || !user.twoFactorEnabled) {
+      return res.status(401).json({
+        success: false,
+        message: "Two-factor authentication is not active on this account.",
+      });
+    }
+
+    const secret = decryptSecret(user.twoFactorSecret);
+    const isValidTotp = verifyToken(code, secret);
+
+    let usedBackupCode = null;
+    if (!isValidTotp) {
+      const codeHash = hashBackupCode(code);
+      const updatedUser = await User.findOneAndUpdate(
+        {
+          _id: user._id,
+          twoFactorBackupCodes: {
+            $elemMatch: { codeHash, usedAt: null },
+          },
+        },
+        {
+          $set: { "twoFactorBackupCodes.$.usedAt": new Date() },
+        },
+        {
+          new: true,
+          select: "+twoFactorBackupCodes",
+        },
+      );
+
+      if (!updatedUser) {
+        return res
+          .status(401)
+          .json({ success: false, message: "Invalid verification code." });
+      }
+
+      usedBackupCode = true;
+      user.twoFactorBackupCodes = updatedUser.twoFactorBackupCodes;
+    }
+
+    const token = generateToken(user, true);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: ENV.NODE_ENV === "production",
+      sameSite: ENV.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    const remaining = user.twoFactorBackupCodes.filter(
+      (bc) => !bc.usedAt,
+    ).length;
+
+    res.status(200).json({
+      success: true,
+      user: formatUser(user),
+      ...(usedBackupCode
+        ? { usedBackupCode: true, backupCodesRemaining: remaining }
+        : {}),
+    });
   } catch (error) {
     next(error);
   }

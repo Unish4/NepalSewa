@@ -37,8 +37,10 @@ const registerAndLogin = async (email) => {
 };
 const makeAdmin = async (email, jurisdiction) => {
   const { cookie } = await registerAndLogin(email);
-  await User.findOneAndUpdate({ email }, { role: "admin", jurisdiction });
-  return cookie;
+  const user = await User.findOneAndUpdate({ email }, { role: "admin", jurisdiction, twoFactorEnabled: true }, { new: true });
+  const { default: generateToken } = await import("../src/utils/generateToken.js");
+  const token = generateToken(user, true);
+  return [`token=${token}`];
 };
 
 describe("In-app notifications", () => {

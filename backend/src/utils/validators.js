@@ -571,3 +571,32 @@ export const createCommentValidator = [
     .isLength({ max: 1000 })
     .withMessage("Comment cannot exceed 1000 characters"),
 ];
+
+export const twoFactorCodeValidator = [
+  body("code")
+    .trim()
+    .notEmpty()
+    .withMessage("Verification code is required")
+    .isLength({ min: 6, max: 10 })
+    .withMessage("Invalid verification code format"),
+];
+
+export const twoFactorLoginValidator = [
+  body("pendingToken").notEmpty().withMessage("Missing login session"),
+  body("code")
+    .trim()
+    .notEmpty()
+    .withMessage("Verification code is required")
+    .isLength({ min: 6, max: 10 })
+    .withMessage("Invalid verification code format"),
+];
+
+export const disableTwoFactorValidator = [
+  body("password").notEmpty().withMessage("Password is required"),
+  body("code")
+    .trim()
+    .notEmpty()
+    .withMessage("Verification code is required")
+    .isLength({ min: 6, max: 10 })
+    .withMessage("Invalid verification code format"),
+];

@@ -91,6 +91,19 @@ const userSchema = new mongoose.Schema(
         awardedAt: { type: Date, default: Date.now },
       },
     ],
+    twoFactorEnabled: { type: Boolean, default: false },
+    twoFactorSecret: { type: String, select: false },
+    twoFactorPendingSecret: { type: String, select: false },
+    twoFactorBackupCodes: {
+      type: [
+        {
+          codeHash: { type: String, required: true },
+          usedAt: { type: Date },
+        },
+      ],
+      select: false,
+      default: [],
+    },
   },
   { timestamps: true },
 );
