@@ -6,6 +6,8 @@ import { uploadToCloudinary } from "../utils/uploadToCloudinary.js";
 import { sendStatusChangeEmail } from "../utils/emailService.js";
 import { cleanupUploadedFiles } from "../middleware/upload.js";
 import { notifyStatusChange } from "../services/notificationService.js";
+import { awardBadgesIfEarned } from "../services/badgeService.js"; 
+import User from "../models/User.js"; 
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -156,9 +158,24 @@ export const updateAssignmentStatus = async (req, res, next) => {
       issue.rejectionReason = rejectionReason.trim();
     }
 
+    const previousStatus = issue.status;
+
     issue.status = status;
     await issue.save();
     await issue.populate("author", "name email");
+
+    if (status === "resolved") {
+      const updatedIssue = await Issue.findOneAndUpdate(
+        { _id: issue._id, resolutionCounted: { $ne: true } },
+        { $set: { resolutionCounted: true } },
+        { new: true }
+      );
+      if (updatedIssue) {
+        User.findByIdAndUpdate(issue.author._id, { $inc: { "stats.reportsResolved": 1 } })
+          .then(() => awardBadgesIfEarned(issue.author._id))
+          .catch((err) => console.error(`Failed to update resolver stats for issue ${issue._id}: ${err.message}`));
+      }
+    }
 
     sendStatusChangeEmail(issue._id, status, rejectionReason || null).catch(
       (err) =>

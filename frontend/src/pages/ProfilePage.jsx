@@ -21,6 +21,9 @@ import {
   Check,
   Download,
   RefreshCw,
+  FileText,
+  CheckCircle2,
+  MessageSquare,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuthStore from "../store/useAuthStore.js";
@@ -32,6 +35,7 @@ import {
 } from "../constants/nepalLocations.js";
 import { ProfileSkeleton } from "../components/ui/SkeletonLoader.jsx";
 import { ROLE_CONFIG } from "../constants/issue.js";
+import BadgeGrid from "../components/profile/BadgeGrid.jsx";
 
 const Toggle = ({ checked, onChange, disabled }) => (
   <button
@@ -327,7 +331,6 @@ export default function ProfilePage() {
       {/* Hero header — matches HomePage section style */}
       <section className="bg-white border-b border-[#e2e8f0]">
         <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
-
           <h1
             className="text-3xl md:text-4xl font-bold text-[#0f172a]
             tracking-tight leading-tight mb-3"
@@ -640,6 +643,42 @@ export default function ProfilePage() {
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Phase 34 — My Impact stats strip */}
+            <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+              <div className="px-6 py-5 border-b border-[#f1f5f9]">
+                <h3 className="text-lg font-bold text-[#0f172a]">My Impact</h3>
+                <p className="text-sm text-[#94a3b8] mt-0.5">
+                  {i18n.language === "ne"
+                    ? "तपाईंको नागरिक सहभागिता र योगदानको तथ्याङ्क"
+                    : "Your civic engagement and contribution statistics"}
+                </p>
+              </div>
+              <div className="grid grid-cols-3 divide-x divide-[#f1f5f9]">
+                {[
+                  { label: i18n.language === "ne" ? "रिपोर्टहरू" : "Reports", value: user.stats?.reportsSubmitted ?? 0, Icon: FileText, color: "#16a34a" },
+                  { label: i18n.language === "ne" ? "समाधान भएका" : "Resolved", value: user.stats?.reportsResolved ?? 0, Icon: CheckCircle2, color: "#059669" },
+                  { label: i18n.language === "ne" ? "टिप्पणीहरू" : "Comments", value: user.stats?.commentsPosted ?? 0, Icon: MessageSquare, color: "#4338ca" },
+                ].map(({ label, value, Icon, color }) => (
+                  <div key={label} className="p-5 text-center hover:bg-[#fafafa] transition-colors">
+                    <Icon size={20} className="mx-auto mb-2" style={{ color }} />
+                    <p className="text-2xl font-black text-[#0f172a]">{value}</p>
+                    <p className="text-xs text-[#94a3b8] font-bold uppercase tracking-wider mt-1">{label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Phase 34 — Badges */}
+            <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 hover:shadow-md transition-shadow">
+              <h3 className="text-lg font-bold text-[#0f172a] mb-1">Badges</h3>
+              <p className="text-sm text-[#94a3b8] mb-5">
+                {i18n.language === "ne"
+                  ? "तपाईंले हासिल गर्नुभएका नागरिक पदकहरू"
+                  : "Civic badges you have earned"}
+              </p>
+              <BadgeGrid badges={user.badges} />
             </div>
 
             {/* Notification preferences */}

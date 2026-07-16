@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MessageSquare, Send, Trash2, Loader2 } from "lucide-react";
+import { MessageSquare, Send, Trash2, Loader2, ChevronDown } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   fetchComments,
@@ -21,6 +21,7 @@ const CommentThread = ({ issueId }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [commentToDelete, setCommentToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(10);
 
   useEffect(() => {
     let active = true;
@@ -56,6 +57,7 @@ const CommentThread = ({ issueId }) => {
       const res = await createCommentRequest(issueId, text.trim());
       setComments((prev) => [...prev, res.comment]);
       setText("");
+      setVisibleCount((prev) => Math.max(prev + 1, comments.length + 1));
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to post comment");
     } finally {
@@ -98,7 +100,7 @@ const CommentThread = ({ issueId }) => {
         </div>
       ) : comments.length > 0 ? (
         <div className="space-y-4 mb-5">
-          {comments.map((c) => {
+          {comments.slice(0, visibleCount).map((c) => {
             const canDelete =
               isAuthenticated && (user?._id === c.author?._id || isModerator);
             return (
@@ -134,6 +136,17 @@ const CommentThread = ({ issueId }) => {
               </div>
             );
           })}
+          {comments.length > visibleCount && (
+            <button
+              onClick={() => setVisibleCount((prev) => prev + 10)}
+              className="w-full py-2.5 px-4 rounded-xl border border-[#e2e8f0] text-xs font-bold
+                text-[#475569] hover:text-[#16a34a] hover:border-[#16a34a] hover:bg-[#16a34a]/5
+                transition-all flex items-center justify-center gap-1.5 cursor-pointer mt-2 shadow-sm"
+            >
+              <ChevronDown size={14} className="animate-bounce" />
+              <span>Load more comments ({comments.length - visibleCount} remaining)</span>
+            </button>
+          )}
         </div>
       ) : (
         <p className="text-xs text-[#94a3b8] mb-5">

@@ -26,9 +26,11 @@ import { timeAgo } from "../../utils/timeAgo.js";
 import MiniMap from "../../components/map/MiniMap.jsx";
 import ConfirmDialog from "../../components/ui/ConfirmDialog.jsx";
 import UpvoteButton from "../../components/issues/UpvoteButton.jsx";
-import CommentThread from "../../components/issues/CommentThread.jsx"; 
+import CommentThread from "../../components/issues/CommentThread.jsx";
+import { BadgeCheck } from "lucide-react";
+import { hasBadge } from "../../utils/badgeUtils.js";
 
-// ── Timeline 
+// ── Timeline
 function IssueTimeline({ status }) {
   const STEPS = [
     {
@@ -148,7 +150,7 @@ export default function IssueDetailPage() {
     }
   };
 
-  // ── Loading 
+  // ── Loading
   if (isLoading) {
     return (
       <div className="max-w-7xl mx-auto px-6 py-6 animate-pulse space-y-4">
@@ -167,7 +169,7 @@ export default function IssueDetailPage() {
     );
   }
 
-  // ── Error 
+  // ── Error
   if (error || !currentIssue) {
     return (
       <div className="max-w-7xl mx-auto px-6 py-20 text-center">
@@ -375,8 +377,11 @@ export default function IssueDetailPage() {
                 </div>
                 <span>
                   Reported by{" "}
-                  <span className="font-medium text-[#0f172a]">
+                  <span className="font-medium text-[#0f172a] inline-flex items-center gap-1">
                     {currentIssue.author?.name ?? "Anonymous"}
+                    {hasBadge(currentIssue.author, "verified_reporter") && (
+                      <BadgeCheck size={12} className="text-teal-600" />
+                    )}
                   </span>
                 </span>
                 <span className="text-[#cbd5e1]">·</span>

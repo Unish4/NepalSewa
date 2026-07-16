@@ -80,6 +80,17 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    stats: {
+      reportsSubmitted: { type: Number, default: 0 },
+      reportsResolved: { type: Number, default: 0 },
+      commentsPosted: { type: Number, default: 0 },
+    },
+    badges: [
+      {
+        key: { type: String, required: true },
+        awardedAt: { type: Date, default: Date.now },
+      },
+    ],
   },
   { timestamps: true },
 );

@@ -16,6 +16,7 @@ const notificationSchema = new mongoose.Schema(
         "escalation",
         "comment",
         "admin_action",
+        "badge_earned",
       ],
       required: true,
     },

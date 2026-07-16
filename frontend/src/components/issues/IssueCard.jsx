@@ -9,6 +9,8 @@ import {
 import { timeAgo } from "../../utils/timeAgo.js";
 import UpvoteButton from "./UpvoteButton.jsx";
 import { useIssueLabels } from "../../hooks/useIssueLabels.js";
+import { BadgeCheck } from "lucide-react";
+import { hasBadge } from "../../utils/badgeUtils.js";
 
 const CategoryBadge = ({ category }) => {
   const { getCategoryLabel } = useIssueLabels();
@@ -163,6 +165,9 @@ const IssueCard = ({ issue }) => {
             </div>
             <span className="text-xs text-[#64748b] truncate">
               {issue.author?.name ?? "Anonymous"}
+              {hasBadge(issue.author, "verified_reporter") && (
+                <BadgeCheck size={11} className="text-teal-600 shrink-0" />
+              )}
             </span>
           </div>
           <div className="flex items-center gap-2 text-xs text-[#94a3b8] shrink-0">

@@ -1,0 +1,77 @@
+import {
+  Flag,
+  TrendingUp,
+  Award,
+  BadgeCheck,
+  CheckCircle2,
+  Star,
+  MessageSquare,
+  Trophy,
+  Zap,
+} from "lucide-react";
+
+export const BADGE_CONFIG = {
+  first_report: {
+    label: "First Report",
+    description: "Submitted your first civic issue report",
+    icon: Flag,
+    color: "#16a34a",
+    bg: "#f0fdf4",
+  },
+  verified_reporter: {
+    label: "Verified Reporter",
+    description: "Verified email with at least one report",
+    icon: BadgeCheck,
+    color: "#0d9488",
+    bg: "#f0fdfa",
+  },
+  active_reporter: {
+    label: "Active Reporter",
+    description: "Submitted 5 or more reports",
+    icon: TrendingUp,
+    color: "#2563eb",
+    bg: "#eff6ff",
+  },
+  community_pillar: {
+    label: "Community Pillar",
+    description: "Submitted 20 or more reports",
+    icon: Award,
+    color: "#7c3aed",
+    bg: "#faf5ff",
+  },
+  problem_solver: {
+    label: "Problem Solver",
+    description: "Had a report resolved",
+    icon: CheckCircle2,
+    color: "#059669",
+    bg: "#ecfdf5",
+  },
+  trusted_voice: {
+    label: "Trusted Voice",
+    description: "Had 10 or more reports resolved",
+    icon: Star,
+    color: "#d97706",
+    bg: "#fffbeb",
+  },
+  engaged_citizen: {
+    label: "Engaged Citizen",
+    description: "Posted 10 or more comments",
+    icon: MessageSquare,
+    color: "#4338ca",
+    bg: "#eef2ff",
+  },
+  visionary_leader: {
+    label: "Visionary Leader",
+    description: "Submitted 50 or more reports",
+    icon: Zap,
+    color: "#e11d48",
+    bg: "#fff1f2",
+  },
+  civic_champion: {
+    label: "Civic Champion",
+    description: "Had 50 or more reports resolved",
+    icon: Trophy,
+    color: "#ea580c",
+    bg: "#fff7ed",
+  },
+};

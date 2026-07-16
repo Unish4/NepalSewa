@@ -2,6 +2,8 @@ import { validationResult } from "express-validator";
 import Comment from "../models/Comment.js";
 import Issue from "../models/Issue.js";
 import { notify } from "../services/notificationService.js";
+import User from "../models/User.js";
+import { awardBadgesIfEarned } from "../services/badgeService.js";
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -11,7 +13,7 @@ const checkValidation = (req, res) => {
   }
 };
 
-// ─── GET /api/issues/:id/comments 
+// ─── GET /api/issues/:id/comments
 export const getComments = async (req, res, next) => {
   try {
     const comments = await Comment.find({ issue: req.params.id })
@@ -29,7 +31,7 @@ export const getComments = async (req, res, next) => {
   }
 };
 
-// ─── POST /api/issues/:id/comments 
+// ─── POST /api/issues/:id/comments
 export const createComment = async (req, res, next) => {
   try {
     checkValidation(req, res);
@@ -46,6 +48,14 @@ export const createComment = async (req, res, next) => {
       text: req.body.text,
     });
     await comment.populate("author", "name role");
+
+    User.findByIdAndUpdate(req.user._id, {
+      $inc: { "stats.commentsPosted": 1 },
+    })
+      .then(() => awardBadgesIfEarned(req.user._id))
+      .catch((err) =>
+        console.error(`Failed to update commenter stats: ${err.message}`),
+      );
 
     if (issue.author.toString() !== req.user._id.toString()) {
       notify({
@@ -70,7 +80,7 @@ export const createComment = async (req, res, next) => {
   }
 };
 
-// ─── DELETE /api/issues/:id/comments/:commentId 
+// ─── DELETE /api/issues/:id/comments/:commentId
 export const deleteComment = async (req, res, next) => {
   try {
     const comment = await Comment.findById(req.params.commentId);
@@ -83,12 +93,10 @@ export const deleteComment = async (req, res, next) => {
     const isModerator = ["admin", "super_admin"].includes(req.user.role);
 
     if (!isOwner && !isModerator) {
-      return res
-        .status(403)
-        .json({
-          success: false,
-          message: "Not authorized to delete this comment",
-        });
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to delete this comment",
+      });
     }
 
     await comment.deleteOne();

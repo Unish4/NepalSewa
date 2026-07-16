@@ -13,6 +13,7 @@ import {
   notifyStatusChange,
   notifyAssignment,
 } from "../services/notificationService.js";
+import { awardBadgesIfEarned } from "../services/badgeService.js"; 
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -231,6 +232,19 @@ export const updateIssueStatus = async (req, res, next) => {
     }
     await issue.save();
     await issue.populate("author", "name email");
+
+    if (status === "resolved") {
+      const updatedIssue = await Issue.findOneAndUpdate(
+        { _id: issue._id, resolutionCounted: { $ne: true } },
+        { $set: { resolutionCounted: true } },
+        { new: true }
+      );
+      if (updatedIssue) {
+        User.findByIdAndUpdate(issue.author._id, { $inc: { "stats.reportsResolved": 1 } })
+          .then(() => awardBadgesIfEarned(issue.author._id))
+          .catch((err) => console.error(`Failed to update resolver stats for issue ${issue._id}: ${err.message}`));
+      }
+    }
 
     if (status !== previousStatus) {
       await logAdminAction({

@@ -13,6 +13,7 @@ import {
 } from "../utils/emailService.js";
 import VerificationToken from "../models/VerificationToken.js";
 import { generateRawToken, hashToken } from "../utils/tokenUtils.js";
+import { awardBadgesIfEarned } from "../services/badgeService.js"; 
 
 const formatUser = (user) => ({
   _id: user._id,
@@ -29,6 +30,8 @@ const formatUser = (user) => ({
   isEmailVerified: user.isEmailVerified,
   jurisdiction: user.jurisdiction,
   department: user.department,
+  stats: user.stats,
+  badges: user.badges,
 });
 
 const checkValidation = (req, res) => {
@@ -383,6 +386,7 @@ export const verifyEmail = async (req, res, next) => {
     }
 
     await User.findByIdAndUpdate(tokenDoc.user, { isEmailVerified: true });
+    awardBadgesIfEarned(tokenDoc.user).catch((err) => console.error(`Badge check failed: ${err.message}`));
     await tokenDoc.deleteOne();
 
     res

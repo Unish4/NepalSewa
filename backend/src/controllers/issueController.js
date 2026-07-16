@@ -8,6 +8,8 @@ import { categorizeIssue } from "../services/aiService.js";
 import { detectBoundary } from "../services/gisService.js";
 import { computeSlaDeadline } from "../utils/slaConfig.js";
 import { logAdminAction } from "../utils/auditLogger.js";
+import { awardBadgesIfEarned } from "../services/badgeService.js";
+import User from "../models/User.js";
 
 const checkValidation = (req, res) => {
   const errors = validationResult(req);
@@ -131,6 +133,10 @@ export const createIssue = async (req, res, next) => {
         ),
       );
 
+    User.findByIdAndUpdate(req.user._id, { $inc: { "stats.reportsSubmitted": 1 } })
+      .then(() => awardBadgesIfEarned(req.user._id))
+      .catch((err) => console.error(`Failed to update reporter stats for issue ${issue._id}: ${err.message}`));
+
     await issue.populate("author", "name email");
     res.status(201).json({ success: true, issue });
   } catch (error) {
@@ -196,7 +202,7 @@ export const getIssues = async (req, res, next) => {
             localField: "author",
             foreignField: "_id",
             as: "author",
-            pipeline: [{ $project: { name: 1 } }],
+            pipeline: [{ $project: { name: 1, badges: 1 } }],
           },
         },
 
@@ -294,7 +300,7 @@ export const getMyIssues = async (req, res, next) => {
 export const getIssueById = async (req, res, next) => {
   try {
     const issue = await Issue.findById(req.params.id)
-      .populate("author", "name email province")
+      .populate("author", "name email province badges")
       .lean();
 
     if (!issue) {

@@ -82,6 +82,7 @@ const issueSchema = new mongoose.Schema(
     aiConfidence: { type: Number },
     rejectionReason: { type: String },
     resolvedAt: { type: Date },
+    resolutionCounted: { type: Boolean, default: false },
     slaDeadline: { type: Date },
     escalated: { type: Boolean, default: false },
     escalatedAt: { type: Date },
