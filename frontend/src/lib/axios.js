@@ -27,6 +27,22 @@ api.interceptors.response.use(
       if (!isAuthRoute) {
         window.location.href = "/login";
       }
+      
+      if (
+        error.response?.status === 403 &&
+        error.response?.data?.code === "TWO_FACTOR_SETUP_REQUIRED" &&
+        window.location.pathname !== "/security-setup"
+      ) {
+        window.location.href = "/security-setup";
+        return Promise.reject(error);
+      }
+
+      if (error.response?.status === 429) {
+        toast.error(
+          error.response?.data?.message ||
+            "Too many requests. Please slow down and try again shortly.",
+        );
+      }
       return Promise.reject(error);
     }
 

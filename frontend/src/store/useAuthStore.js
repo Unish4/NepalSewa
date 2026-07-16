@@ -12,6 +12,11 @@ import {
   verifyEmailRequest,
   resendVerificationRequest,
   fetchMe,
+  fetchTwoFactorStatus,
+  setupTwoFactorRequest,
+  verifySetupTwoFactorRequest,
+  disableTwoFactorRequest,
+  verifyTwoFactorLoginRequest,
 } from "../services/authService.js";
 import i18n from "../i18n/index.js";
 
@@ -78,13 +83,49 @@ const useAuthStore = create(
         set({ isLoading: true });
         try {
           const res = await loginUser(credentials);
+          if (res.requiredTwoFactor) return res;
           set({ user: res.user, isAuthenticated: true });
+          if (res.user?.preferredLanguage)
+            i18n.changeLanguage(res.user.preferredLanguage);
           return res;
         } finally {
           set({ isLoading: false });
         }
       },
 
+      verifyTwoFactorLogin: async (pendingToken, code) => {
+        set({ isLoading: true });
+        try {
+          const res = await verifyTwoFactorLoginRequest(pendingToken, code);
+          set({ user: res.user, isAuthenticated: true });
+          if (res.user?.preferredLanguage)
+            i18n.changeLanguage(res.user.preferredLanguage);
+          return res;
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
+      getTwoFactorStatus: () => fetchTwoFactorStatus(),
+      setupTwoFactor: () => setupTwoFactorRequest(),
+      verifySetupTwoFactor: async (code) => {
+        const res = await verifySetupTwoFactorRequest(code);
+        set((state) => ({
+          user: state.user
+            ? { ...state.user, twoFactorEnabled: true }
+            : state.user,
+        }));
+        return res;
+      },
+      disableTwoFactor: async (password, code) => {
+        const res = await disableTwoFactorRequest(password, code);
+        set((state) => ({
+          user: state.user
+            ? { ...state.user, twoFactorEnabled: false }
+            : state.user,
+        }));
+        return res;
+      },
       logout: async () => {
         try {
           await logoutUser();

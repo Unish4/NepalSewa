@@ -62,8 +62,11 @@ const INPUT_CLS =
 export default function LoginPage() {
   const { t, i18n } = useTranslation("auth");
   const navigate = useNavigate();
-  const { login, isLoading } = useAuthStore();
+  const { login, isLoading, verifyTwoFactorLogin } = useAuthStore();
   const [showPassword, setShowPassword] = useState(false);
+  const [twoFactorStep, setTwoFactorStep] = useState(false);
+  const [pendingToken, setPendingToken] = useState(null);
+  const [twoFactorCode, setTwoFactorCode] = useState("");
 
   const {
     register,
@@ -76,11 +79,29 @@ export default function LoginPage() {
   const handleSubmitWithError = async (data) => {
     setApiError("");
     try {
-      await login(data);
+      const res = await login(data);
+      if (res.requiredTwoFactor) {
+        setTwoFactorStep(true);
+        setPendingToken(res.pendingToken);
+        return;
+      }
       toast.success(t("login.welcomeBack") + "!");
       navigate("/");
     } catch (error) {
       setApiError(error.response?.data?.message || t("login.errorInvalid"));
+    }
+  };
+
+  const handleTwoFactorSubmit = async (e) => {
+    e.preventDefault();
+    setApiError("");
+    try {
+      await verifyTwoFactorLogin(pendingToken, twoFactorCode);
+      navigate("/");
+    } catch (error) {
+      setApiError(
+        error.response?.data?.message || t("login.twoFactorErrorInvalid"),
+      );
     }
   };
 
@@ -96,7 +117,10 @@ export default function LoginPage() {
           <div className="w-8 h-8 flex items-center justify-center shrink-0">
             <img src="/icon.png" alt="" className="w-full h-full rounded-lg" />
           </div>
-          <Link to="/" className="font-bold text-white text-[15px] tracking-tight">
+          <Link
+            to="/"
+            className="font-bold text-white text-[15px] tracking-tight"
+          >
             {i18n.language === "ne" ? (
               <>
                 नेपाल<span style={{ color: "#86efac" }}> सेवा</span>
@@ -181,7 +205,11 @@ export default function LoginPage() {
         <div className="lg:hidden p-5 border-b border-[#f1f5f9]">
           <Link to="/" className="inline-flex items-center gap-2">
             <div className="w-7 h-7 flex items-center justify-center shrink-0">
-              <img src="/icon.png" alt="" className="w-full h-full rounded-lg" />
+              <img
+                src="/icon.png"
+                alt=""
+                className="w-full h-full rounded-lg"
+              />
             </div>
             <span className="font-bold text-[#0f172a] text-sm">
               {i18n.language === "ne" ? (
@@ -219,99 +247,134 @@ export default function LoginPage() {
               </div>
             )}
 
-            <form onSubmit={handleSubmit(handleSubmitWithError)} noValidate>
-              {/* Email */}
-              <div className="mb-4">
-                <label
-                  className="block text-xs font-semibold text-[#475569] mb-1.5"
-                  htmlFor="email"
-                >
-                  {t("login.emailLabel")}
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  placeholder={t("login.emailPlaceholder")}
-                  {...register("email", {
-                    required: "Email is required",
-                    pattern: {
-                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: "Enter a valid email",
-                    },
-                  })}
-                  className={
-                    errors.email
-                      ? INPUT_CLS.replace("border-[#e2e8f0]", "border-red-300")
-                      : INPUT_CLS
-                  }
-                />
-                {errors.email && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="mb-4">
-                <label
-                  className="block text-xs font-semibold text-[#475569] mb-1.5"
-                  htmlFor="password"
-                >
-                  {t("login.passwordLabel")}
-                </label>
-                <div className="relative">
-                  <input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder={t("login.passwordPlaceholder")}
-                    {...register("password", {
-                      required: "Password is required",
-                    })}
-                    className={`${errors.password ? INPUT_CLS.replace("border-[#e2e8f0]", "border-red-300") : INPUT_CLS} pr-10`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#475569] transition-colors"
+            {!twoFactorStep && (
+              <form onSubmit={handleSubmit(handleSubmitWithError)} noValidate>
+                {/* Email */}
+                <div className="mb-4">
+                  <label
+                    className="block text-xs font-semibold text-[#475569] mb-1.5"
+                    htmlFor="email"
                   >
-                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
-                  </button>
+                    {t("login.emailLabel")}
+                  </label>
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder={t("login.emailPlaceholder")}
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                        message: "Enter a valid email",
+                      },
+                    })}
+                    className={
+                      errors.email
+                        ? INPUT_CLS.replace("border-[#e2e8f0]", "border-red-300")
+                        : INPUT_CLS
+                    }
+                  />
+                  {errors.email && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
-                {errors.password && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
 
-              {/* Forgot password */}
-              <div className="flex items-center justify-end mb-5">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-[#16a34a] hover:text-[#15803d] font-medium transition-colors"
+                {/* Password */}
+                <div className="mb-4">
+                  <label
+                    className="block text-xs font-semibold text-[#475569] mb-1.5"
+                    htmlFor="password"
+                  >
+                    {t("login.passwordLabel")}
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder={t("login.passwordPlaceholder")}
+                      {...register("password", {
+                        required: "Password is required",
+                      })}
+                      className={`${errors.password ? INPUT_CLS.replace("border-[#e2e8f0]", "border-red-300") : INPUT_CLS} pr-10`}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#475569] transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
+                  {errors.password && (
+                    <p className="text-xs text-red-500 mt-1">
+                      {errors.password.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Forgot password */}
+                <div className="flex items-center justify-end mb-5">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm text-[#16a34a] hover:text-[#15803d] font-medium transition-colors"
+                  >
+                    {t("login.forgotPassword")}
+                  </Link>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 rounded-lg bg-[#16a34a] hover:bg-[#15803d] text-white
+                    font-semibold text-[15px] transition-all shadow-sm disabled:opacity-60
+                    disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {t("login.forgotPassword")}
-                </Link>
-              </div>
+                  {isLoading ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />{" "}
+                      {t("login.signingIn")}
+                    </>
+                  ) : (
+                    t("login.signInButton")
+                  )}
+                </button>
+              </form>
+            )}
 
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full h-12 rounded-lg bg-[#16a34a] hover:bg-[#15803d] text-white
-                  font-semibold text-[15px] transition-all shadow-sm disabled:opacity-60
-                  disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" />{" "}
-                    {t("login.signingIn")}
-                  </>
-                ) : (
-                  t("login.signInButton")
-                )}
-              </button>
-            </form>
+            {twoFactorStep && (
+              <form onSubmit={handleTwoFactorSubmit}>
+                <p className="text-sm text-[#64748b] mb-4">
+                  {t("login.twoFactorInstruction")}
+                </p>
+                <input
+                  type="text"
+                  autoFocus
+                  value={twoFactorCode}
+                  onChange={(e) => setTwoFactorCode(e.target.value)}
+                  placeholder="123456"
+                  className="w-full h-12 px-3 text-center text-lg tracking-widest rounded-lg border
+                    border-[#e2e8f0] outline-none focus:border-[#16a34a] focus:ring-2
+                    focus:ring-[#16a34a]/15 transition-all mb-4"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading}
+                  className="w-full h-12 rounded-lg bg-[#16a34a] hover:bg-[#15803d] text-white
+                    font-semibold text-[15px] transition-all shadow-sm disabled:opacity-60"
+                >
+                  {isLoading ? t("login.twoFactorVerifying") : t("login.twoFactorVerifyButton")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setTwoFactorStep(false); setPendingToken(null); setTwoFactorCode(""); }}
+                  className="w-full text-center text-xs text-[#94a3b8] hover:text-[#475569] mt-3 transition-colors"
+                >
+                  {t("login.twoFactorBack")}
+                </button>
+              </form>
+            )}
 
             <p className="text-sm text-[#64748b] text-center mt-6">
               {t("login.noAccount")}{" "}

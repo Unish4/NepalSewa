@@ -12,7 +12,10 @@ const registerAndLogin = async (email, role = "citizen") => {
   // Simulates the manual Atlas role edit used in real admin onboarding —
   // there is no public API to self-promote to admin, by design.
   if (role !== "citizen") {
-    await User.findOneAndUpdate({ email }, { role });
+    const user = await User.findOneAndUpdate({ email }, { role, twoFactorEnabled: true }, { new: true });
+    const { default: generateToken } = await import("../src/utils/generateToken.js");
+    const token = generateToken(user, true);
+    return [`token=${token}`];
   }
   return res.headers["set-cookie"];
 };

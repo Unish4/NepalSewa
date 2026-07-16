@@ -11,6 +11,7 @@ import {
   ClipboardList,
   ChevronRight,
   ShieldCheck,
+  ShieldOff,
   CheckCircle,
   Camera,
   Loader2,
@@ -346,89 +347,125 @@ export default function ProfilePage() {
       <section className="max-w-7xl mx-auto px-6 py-10 md:py-14">
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Profile card — left column */}
-          <div
-            className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-7
-            hover:shadow-md hover:border-[#16a34a]/20 transition-all h-fit"
-          >
-            <div className="flex flex-col items-center text-center">
-              <div className="relative mb-5">
-                <div
-                  className="w-24 h-24 rounded-2xl bg-[#f0fdf4] border-2 border-[#bbf7d0]
-                  flex items-center justify-center shadow-sm overflow-hidden"
-                >
-                  {user.avatar ? (
-                    <img
-                      src={user.avatar}
-                      alt={user.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <span className="text-4xl font-bold text-[#16a34a]">
-                      {user.name?.[0]?.toUpperCase()}
-                    </span>
-                  )}
+          <div className="space-y-4 h-fit">
+            <div
+              className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-7
+              hover:shadow-md hover:border-[#16a34a]/20 transition-all"
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className="relative mb-5">
+                  <div
+                    className="w-24 h-24 rounded-2xl bg-[#f0fdf4] border-2 border-[#bbf7d0]
+                    flex items-center justify-center shadow-sm overflow-hidden"
+                  >
+                    {user.avatar ? (
+                      <img
+                        src={user.avatar}
+                        alt={user.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-4xl font-bold text-[#16a34a]">
+                        {user.name?.[0]?.toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <label
+                    htmlFor="avatar-upload"
+                    className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#16a34a]
+                      text-white flex items-center justify-center cursor-pointer
+                      hover:bg-[#15803d] transition-colors shadow-sm"
+                    title={
+                      i18n.language === "ne"
+                        ? "अवतार अपलोड गर्नुहोस्"
+                        : "Upload avatar"
+                    }
+                  >
+                    {isUploadingAvatar ? (
+                      <Loader2 size={14} className="animate-spin" />
+                    ) : (
+                      <Camera size={14} />
+                    )}
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAvatarUpload}
+                    className="hidden"
+                  />
                 </div>
-                <label
-                  htmlFor="avatar-upload"
-                  className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-[#16a34a]
-                    text-white flex items-center justify-center cursor-pointer
-                    hover:bg-[#15803d] transition-colors shadow-sm"
-                  title={
-                    i18n.language === "ne"
-                      ? "अवतार अपलोड गर्नुहोस्"
-                      : "Upload avatar"
-                  }
+
+                <h2 className="text-xl font-bold text-[#0f172a] mb-1">
+                  {user.name}
+                </h2>
+                <p className="text-sm text-[#64748b] mb-4">{user.email}</p>
+
+                <span
+                  className="inline-block mt-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border"
+                  style={{
+                    color: ROLE_CONFIG[user.role]?.color ?? "#64748b",
+                    backgroundColor: ROLE_CONFIG[user.role]?.bg ?? "#f1f5f9",
+                    borderColor: ROLE_CONFIG[user.role]?.border ?? "#e2e8f0",
+                  }}
                 >
-                  {isUploadingAvatar ? (
-                    <Loader2 size={14} className="animate-spin" />
-                  ) : (
-                    <Camera size={14} />
-                  )}
-                </label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarUpload}
-                  className="hidden"
-                />
+                  {roleLabel}
+                </span>
               </div>
 
-              <h2 className="text-xl font-bold text-[#0f172a] mb-1">
-                {user.name}
-              </h2>
-              <p className="text-sm text-[#64748b] mb-4">{user.email}</p>
-
-              <span
-                className="inline-block mt-1.5 text-xs font-semibold px-2.5 py-1 rounded-full border"
-                style={{
-                  color: ROLE_CONFIG[user.role]?.color ?? "#64748b",
-                  backgroundColor: ROLE_CONFIG[user.role]?.bg ?? "#f1f5f9",
-                  borderColor: ROLE_CONFIG[user.role]?.border ?? "#e2e8f0",
-                }}
-              >
-                {roleLabel}
-              </span>
+              <div className="mt-7 pt-6 border-t border-[#f1f5f9] space-y-3">
+                {[
+                  user.province && {
+                    label: t("profile.province"),
+                    value: user.province,
+                  },
+                  user.phone && {
+                    label: t("profile.phone"),
+                    value: user.phone,
+                  },
+                ]
+                  .filter(Boolean)
+                  .map(({ label, value }) => (
+                    <div
+                      key={label}
+                      className="flex items-center justify-between text-sm"
+                    >
+                      <span className="text-[#94a3b8]">{label}</span>
+                      <span className="font-medium text-[#0f172a]">
+                        {value}
+                      </span>
+                    </div>
+                  ))}
+              </div>
             </div>
 
-            <div className="mt-7 pt-6 border-t border-[#f1f5f9] space-y-3">
-              {[
-                user.province && {
-                  label: t("profile.province"),
-                  value: user.province,
-                },
-                user.phone && { label: t("profile.phone"), value: user.phone },
-              ]
-                .filter(Boolean)
-                .map(({ label, value }) => (
-                  <div
-                    key={label}
-                    className="flex items-center justify-between text-sm"
-                  >
-                    <span className="text-[#94a3b8]">{label}</span>
-                    <span className="font-medium text-[#0f172a]">{value}</span>
+            {/* Phase 36 — Security summary card */}
+            <div className="bg-white rounded-xl border border-[#e2e8f0] shadow-sm mb-4 p-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {user.twoFactorEnabled ? (
+                    <ShieldCheck size={17} className="text-[#16a34a]" />
+                  ) : (
+                    <ShieldOff size={17} className="text-[#94a3b8]" />
+                  )}
+                  <div>
+                    <p className="text-sm font-semibold text-[#0f172a]">
+                      {t("profile.twoFactorAuthentication")}
+                    </p>
+                    <p className="text-xs text-[#94a3b8] mt-0.5">
+                      {user.twoFactorEnabled
+                        ? t("profile.twoFactorEnabled")
+                        : t("profile.twoFactorDisabled")}
+                    </p>
                   </div>
-                ))}
+                </div>
+                <Link
+                  to="/security-setup"
+                  className="text-xs font-semibold text-[#16a34a] hover:underline"
+                >
+                  {t("actions.manage")}
+                </Link>{" "}
+              </div>
             </div>
           </div>
 
@@ -646,40 +683,75 @@ export default function ProfilePage() {
             </div>
 
             {/* Phase 34 — My Impact stats strip */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-              <div className="px-6 py-5 border-b border-[#f1f5f9]">
-                <h3 className="text-lg font-bold text-[#0f172a]">My Impact</h3>
-                <p className="text-sm text-[#94a3b8] mt-0.5">
-                  {i18n.language === "ne"
-                    ? "तपाईंको नागरिक सहभागिता र योगदानको तथ्याङ्क"
-                    : "Your civic engagement and contribution statistics"}
-                </p>
+            {user.role === "citizen" && (
+              <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm overflow-hidden hover:shadow-md transition-shadow">
+                <div className="px-6 py-5 border-b border-[#f1f5f9]">
+                  <h3 className="text-lg font-bold text-[#0f172a]">
+                    My Impact
+                  </h3>
+                  <p className="text-sm text-[#94a3b8] mt-0.5">
+                    {i18n.language === "ne"
+                      ? "तपाईंको नागरिक सहभागिता र योगदानको तथ्याङ्क"
+                      : "Your civic engagement and contribution statistics"}
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 divide-x divide-[#f1f5f9]">
+                  {[
+                    {
+                      label: i18n.language === "ne" ? "रिपोर्टहरू" : "Reports",
+                      value: user.stats?.reportsSubmitted ?? 0,
+                      Icon: FileText,
+                      color: "#16a34a",
+                    },
+                    {
+                      label:
+                        i18n.language === "ne" ? "समाधान भएका" : "Resolved",
+                      value: user.stats?.reportsResolved ?? 0,
+                      Icon: CheckCircle2,
+                      color: "#059669",
+                    },
+                    {
+                      label: i18n.language === "ne" ? "टिप्पणीहरू" : "Comments",
+                      value: user.stats?.commentsPosted ?? 0,
+                      Icon: MessageSquare,
+                      color: "#4338ca",
+                    },
+                  ].map(({ label, value, Icon, color }) => (
+                    <div
+                      key={label}
+                      className="p-5 text-center hover:bg-[#fafafa] transition-colors"
+                    >
+                      <Icon
+                        size={20}
+                        className="mx-auto mb-2"
+                        style={{ color }}
+                      />
+                      <p className="text-2xl font-black text-[#0f172a]">
+                        {value}
+                      </p>
+                      <p className="text-xs text-[#94a3b8] font-bold uppercase tracking-wider mt-1">
+                        {label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="grid grid-cols-3 divide-x divide-[#f1f5f9]">
-                {[
-                  { label: i18n.language === "ne" ? "रिपोर्टहरू" : "Reports", value: user.stats?.reportsSubmitted ?? 0, Icon: FileText, color: "#16a34a" },
-                  { label: i18n.language === "ne" ? "समाधान भएका" : "Resolved", value: user.stats?.reportsResolved ?? 0, Icon: CheckCircle2, color: "#059669" },
-                  { label: i18n.language === "ne" ? "टिप्पणीहरू" : "Comments", value: user.stats?.commentsPosted ?? 0, Icon: MessageSquare, color: "#4338ca" },
-                ].map(({ label, value, Icon, color }) => (
-                  <div key={label} className="p-5 text-center hover:bg-[#fafafa] transition-colors">
-                    <Icon size={20} className="mx-auto mb-2" style={{ color }} />
-                    <p className="text-2xl font-black text-[#0f172a]">{value}</p>
-                    <p className="text-xs text-[#94a3b8] font-bold uppercase tracking-wider mt-1">{label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+            )}
 
             {/* Phase 34 — Badges */}
-            <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 hover:shadow-md transition-shadow">
-              <h3 className="text-lg font-bold text-[#0f172a] mb-1">Badges</h3>
-              <p className="text-sm text-[#94a3b8] mb-5">
-                {i18n.language === "ne"
-                  ? "तपाईंले हासिल गर्नुभएका नागरिक पदकहरू"
-                  : "Civic badges you have earned"}
-              </p>
-              <BadgeGrid badges={user.badges} />
-            </div>
+            {user.role === "citizen" && (
+              <div className="bg-white rounded-2xl border border-[#e2e8f0] shadow-sm p-6 hover:shadow-md transition-shadow">
+                <h3 className="text-lg font-bold text-[#0f172a] mb-1">
+                  Badges
+                </h3>
+                <p className="text-sm text-[#94a3b8] mb-5">
+                  {i18n.language === "ne"
+                    ? "तपाईंले हासिल गर्नुभएका नागरिक पदकहरू"
+                    : "Civic badges you have earned"}
+                </p>
+                <BadgeGrid badges={user.badges} />
+              </div>
+            )}
 
             {/* Notification preferences */}
             <div

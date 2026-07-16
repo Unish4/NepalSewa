@@ -44,6 +44,7 @@ import ScorecardDirectoryPage from "./pages/public/ScorecardDirectoryPage";
 import ScorecardPage from "./pages/public/ScorecardPage";
 
 import MapViewPage from "./components/issues/MapViewPage";
+import TwoFactorSetupPage from "./pages/TwoFactorSetupPage"; 
 
 // Public only route - redirects authenticated users away from auth pages
 const PublicOnlyRoute = ({ children }) => {
@@ -210,6 +211,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <ProfilePage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="security-setup"
+            element={
+              <ProtectedRoute>
+                <TwoFactorSetupPage />
               </ProtectedRoute>
             }
           />

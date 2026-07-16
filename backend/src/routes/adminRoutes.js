@@ -33,6 +33,7 @@ import {
   createAdminValidator,
   updateAdminJurisdictionValidator,
 } from "../utils/validators.js";
+import { requireTwoFactorEnabled } from "../middleware/twoFactor.js"; 
 import { scopeToMunicipality } from "../middleware/jurisdiction.js";
 import { validationResult } from "express-validator";
 
@@ -48,6 +49,8 @@ const validate = (req, res, next) => {
 };
 
 router.use(protect, requireAdmin, scopeToMunicipality);
+
+router.use(protect, requireAdmin, requireTwoFactorEnabled, scopeToMunicipality);
 
 router.get("/stats", getDashboardStats);
 router.get("/issues", getAllIssues);

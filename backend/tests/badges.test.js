@@ -134,14 +134,19 @@ describe("Reputation and badges", () => {
       "location.district": "Kathmandu",
     });
 
-    const { cookie: adminCookie } = await registerAndLogin("admin4@test.com");
-    await User.findOneAndUpdate(
+    const { cookie } = await registerAndLogin("admin4@test.com");
+    const adminUser = await User.findOneAndUpdate(
       { email: "admin4@test.com" },
       {
         role: "admin",
         jurisdiction: { province: "Bagmati Province", district: "Kathmandu" },
+        twoFactorEnabled: true,
       },
+      { new: true },
     );
+    const { default: generateToken } = await import("../src/utils/generateToken.js");
+    const token = generateToken(adminUser, true);
+    const adminCookie = [`token=${token}`];
 
     await request(app)
       .patch(`/api/admin/issues/${issueId}/status`)

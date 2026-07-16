@@ -9,12 +9,21 @@ const REQUIRED_ENV_VARS = [
   "CLOUDINARY_API_KEY",
   "CLOUDINARY_API_SECRET",
   "GEMINI_API_KEY",
+  "TOTP_ENCRYPTION_KEY",
 ];
 REQUIRED_ENV_VARS.forEach((varName) => {
   if (!process.env[varName]) {
     throw new Error(`Environment variable not set: ${varName}`);
   }
 });
+
+// Validate TOTP_ENCRYPTION_KEY format: exactly 64 hexadecimal characters
+const totpKey = process.env.TOTP_ENCRYPTION_KEY;
+if (!/^[0-9a-fA-F]{64}$/.test(totpKey)) {
+  throw new Error(
+    `TOTP_ENCRYPTION_KEY must be exactly 64 hexadecimal characters, received: ${totpKey.length} characters`
+  );
+}
 
 const ENV = {
   PORT: process.env.PORT || 3000,
@@ -30,6 +39,10 @@ const ENV = {
   GMAIL_USER: process.env.GMAIL_USER,
   ARCJET_KEY: process.env.ARCJET_KEY,
   SENTRY_DSN: process.env.SENTRY_DSN,
+  VAPID_PUBLIC_KEY: process.env.VAPID_PUBLIC_KEY,
+  VAPID_PRIVATE_KEY: process.env.VAPID_PRIVATE_KEY,
+  VAPID_SUBJECT: process.env.VAPID_SUBJECT,
+  TOTP_ENCRYPTION_KEY: process.env.TOTP_ENCRYPTION_KEY,
 };
 
 export default ENV;

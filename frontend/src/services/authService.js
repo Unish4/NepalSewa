@@ -58,3 +58,27 @@ export const resendVerificationRequest = async () => {
   const response = await api.post("/api/auth/resend-verification");
   return response.data;
 };
+
+export const fetchTwoFactorStatus = async () => {
+  const response = await api.get("/api/auth/2fa/status");
+  return response.data;
+};
+export const setupTwoFactorRequest = async () => {
+  const response = await api.post("/api/auth/2fa/setup");
+  return response.data;
+};
+export const verifySetupTwoFactorRequest = async (code) => {
+  const response = await api.post("/api/auth/2fa/verify-setup", { code });
+  return response.data;
+};
+export const disableTwoFactorRequest = async (password, code) => {
+  const response = await api.post("/api/auth/2fa/disable", { password, code });
+  return response.data;
+};
+export const verifyTwoFactorLoginRequest = async (pendingToken, code) => {
+  const response = await api.post("/api/auth/2fa/login-verify", {
+    pendingToken,
+    code,
+  });
+  return response.data;
+};

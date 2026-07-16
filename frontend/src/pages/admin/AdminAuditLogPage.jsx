@@ -52,14 +52,11 @@ const AdminAuditLogPage = () => {
   const [logs, setLogs] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [actionFilter, setActionFilter] = useState("");
   const [page, setPage] = useState(1);
 
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
-    setError(null);
     const params = { page, limit: 20 };
     if (actionFilter) params.action = actionFilter;
     fetchAuditLog(params)
@@ -99,6 +96,7 @@ const AdminAuditLogPage = () => {
             onChange={(e) => {
               setActionFilter(e.target.value);
               setPage(1);
+              setIsLoading(true);
             }}
             className="h-9 pl-3 pr-8 text-sm border border-[#e2e8f0] rounded-lg bg-white
               outline-none cursor-pointer appearance-none"
@@ -185,7 +183,10 @@ const AdminAuditLogPage = () => {
             <div className="flex items-center gap-2">
               <button
                 disabled={!pagination.hasPrev}
-                onClick={() => setPage((p) => p - 1)}
+                onClick={() => {
+                  setPage((p) => p - 1);
+                  setIsLoading(true);
+                }}
                 className="px-3 py-1.5 text-xs font-medium border border-[#e2e8f0] rounded-lg
                   hover:bg-[#f8fafc] text-[#475569] disabled:opacity-40 disabled:cursor-not-allowed"
               >
@@ -193,7 +194,10 @@ const AdminAuditLogPage = () => {
               </button>
               <button
                 disabled={!pagination.hasNext}
-                onClick={() => setPage((p) => p + 1)}
+                onClick={() => {
+                  setPage((p) => p + 1);
+                  setIsLoading(true);
+                }}
                 className="px-3 py-1.5 text-xs font-medium border border-[#e2e8f0] rounded-lg
                   hover:bg-[#f8fafc] text-[#475569] disabled:opacity-40 disabled:cursor-not-allowed"
               >

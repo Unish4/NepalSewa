@@ -33,14 +33,18 @@ const registerAndLogin = async (email) => {
 
 const makeAdmin = async (email, jurisdiction) => {
   const { cookie } = await registerAndLogin(email);
-  await User.findOneAndUpdate({ email }, { role: "admin", jurisdiction });
-  return cookie;
+  const user = await User.findOneAndUpdate({ email }, { role: "admin", jurisdiction, twoFactorEnabled: true }, { new: true });
+  const { default: generateToken } = await import("../src/utils/generateToken.js");
+  const token = generateToken(user, true);
+  return [`token=${token}`];
 };
 
 const makeSuperAdmin = async (email) => {
   const { cookie } = await registerAndLogin(email);
-  await User.findOneAndUpdate({ email }, { role: "super_admin" });
-  return cookie;
+  const user = await User.findOneAndUpdate({ email }, { role: "super_admin", twoFactorEnabled: true }, { new: true });
+  const { default: generateToken } = await import("../src/utils/generateToken.js");
+  const token = generateToken(user, true);
+  return [`token=${token}`];
 };
 
 // Creates a real issue through the API (exercising the actual route),

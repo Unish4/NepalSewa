@@ -44,6 +44,7 @@ export const protect = async (req, res, next) => {
     }
 
     req.user = user;
+    req.twoFactorVerified = decoded.twoFactorVerified || false;
     next();
   } catch (error) {
     return res.status(401).json({
