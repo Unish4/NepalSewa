@@ -7,7 +7,7 @@ const isIos = () =>
 
 const isInStandaloneMode = () =>
   typeof window !== "undefined" &&
-  (window.matchMedia("(display-mode: standalone)").matches ||
+  ((typeof window.matchMedia === "function" && window.matchMedia("(display-mode: standalone)").matches) ||
     window.navigator?.standalone === true);
 
 const useOfflineStore = create((set) => ({
