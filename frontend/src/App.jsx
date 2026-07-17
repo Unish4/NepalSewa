@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 // Layout and pages
@@ -89,6 +89,36 @@ const SuperAdminRoute = ({ children }) => {
 
 function App() {
   const { checkAuth, isCheckingAuth } = useAuthStore();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (import.meta.env.DEV) {
+      let timerId;
+      const runAudit = async () => {
+        try {
+          const axe = await import("axe-core");
+          timerId = setTimeout(() => {
+            axe.default.run(document)
+              .then((results) => {
+                if (results.violations.length > 0) {
+                  console.warn(
+                    `[Axe Accessibility Warnings] Found ${results.violations.length} violations on ${location.pathname}:`,
+                    results.violations
+                  );
+                }
+              })
+              .catch((err) => console.error("Axe audit error:", err));
+          }, 1000);
+        } catch (err) {
+          console.error("Failed to load axe-core:", err);
+        }
+      };
+      runAudit();
+      return () => {
+        if (timerId) clearTimeout(timerId);
+      };
+    }
+  }, [location.pathname]);
 
   useEffect(() => {
     checkAuth();

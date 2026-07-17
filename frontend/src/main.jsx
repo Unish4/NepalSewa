@@ -1,13 +1,7 @@
-import React, { StrictMode } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
-import ReactDOM from "react-dom"; 
 
-if (import.meta.env.DEV) {
-  import("@axe-core/react").then(({ default: axe }) => {
-    axe(React, ReactDOM, 1000);
-  });
-}
 import * as Sentry from "@sentry/react";
 
 // Early capture of PWA install prompt
@@ -19,7 +13,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
 
 import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
-import ErrorFallback from "./components/ErrorFallback.jsx"; // ← Phase 26
+import ErrorFallback from "./components/ErrorFallback.jsx"; 
 import { initSentry } from "./lib/sentry.js";
 
 initSentry(); 
